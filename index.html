@@ -212,7 +212,6 @@ body {
   border: 1px solid var(--border-column);
   border-radius: var(--radius-column);
   padding: 14px;
-  min-height: 300px;
   display: flex;
   flex-direction: column;
   transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
@@ -299,17 +298,6 @@ body {
   min-height: 60px;
 }
 
-/* 列内placeholder */
-.column-placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 13px;
-  pointer-events: none;
-}
-
 /* ==================== 任务卡片 ==================== */
 .task-card {
   background: rgba(255,255,255,0.9);
@@ -317,7 +305,7 @@ body {
   -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(0,0,0,0.06);
   border-radius: var(--radius-card);
-  padding: 14px 16px;
+  padding: 16px 18px;
   cursor: grab;
   position: relative;
   box-shadow: var(--shadow-card);
@@ -379,12 +367,32 @@ body {
 .task-card .card-desc {
   font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 卡片进展预览 */
+.task-card .card-progress-preview {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  margin-bottom: 2px;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  padding-left: 6px;
+  border-left: 2px solid var(--color-col-progress);
+}
+.task-card .card-progress-preview .progress-label {
+  font-weight: 500;
+  color: #7c8ce0;
+  margin-right: 2px;
 }
 
 /* 卡片底部信息行 */
@@ -750,28 +758,55 @@ body {
   to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 }
 
-/* ==================== 进展记录相关 ==================== */
-.card-progress-summary {
+/* ==================== 进展记录相关（卡片内联预览 + 模态框内板块） ==================== */
+
+.progress-section {
   margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px dashed #e5e7eb;
-  font-size: 11px;
-  color: #7c8ce0;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: color var(--transition-fast);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
 }
-.card-progress-summary:hover {
-  color: #4f6ef7;
-  text-decoration: underline;
+
+.progress-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+.progress-section-toggle:hover {
+  background: #f3f4f6;
+}
+.progress-section-toggle .toggle-icon {
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+.progress-section-toggle.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.progress-section-body {
+  display: none;
+  padding: 10px 14px 14px;
+  background: #fff;
+}
+.progress-section-body.show {
+  display: block;
 }
 
 .progress-history {
-  max-height: 260px;
+  max-height: 220px;
   overflow-y: auto;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .progress-item {
@@ -955,18 +990,6 @@ body {
 
 <!-- 三列看板 -->
 <main class="board" id="board">
-  <!-- 待处理列 -->
-  <div class="column col-todo" data-status="todo" id="colTodo">
-    <div class="column-header">
-      <span class="col-title">
-        📌 待处理
-        <span class="col-count" id="countTodo">0</span>
-      </span>
-      <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
-    </div>
-    <div class="card-list" id="listTodo"></div>
-  </div>
-
   <!-- 进行中列 -->
   <div class="column col-progress" data-status="in-progress" id="colInProgress">
     <div class="column-header">
@@ -977,6 +1000,18 @@ body {
       <button class="btn-add-task" data-status="in-progress" title="新增进行中任务">+</button>
     </div>
     <div class="card-list" id="listInProgress"></div>
+  </div>
+
+  <!-- 待处理列 -->
+  <div class="column col-todo" data-status="todo" id="colTodo">
+    <div class="column-header">
+      <span class="col-title">
+        📌 待处理
+        <span class="col-count" id="countTodo">0</span>
+      </span>
+      <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
+    </div>
+    <div class="card-list" id="listTodo"></div>
   </div>
 
   <!-- 已完成列 -->
@@ -1153,6 +1188,16 @@ class TaskManager {
     return true;
   }
 
+  /** 更新进展记录内容（保留原时间） */
+  updateProgress(taskId, index, newText) {
+    const task = this.getById(taskId);
+    if (!task || !Array.isArray(task.progress)) return false;
+    if (index < 0 || index >= task.progress.length) return false;
+    task.progress[index].text = newText.trim();
+    this._saveToStorage();
+    return true;
+  }
+
   /** 获取筛选后的任务（不修改原数组） */
   getFilteredAndSorted(filters, sortBy) {
     let result = [...this.tasks];
@@ -1303,24 +1348,12 @@ class UIManager {
       });
     });
 
-    // 看板事件委托：双击编辑、点击进展、拖拽、复选框
+    // 看板事件委托：双击编辑、拖拽、复选框
     this.$board.addEventListener('dblclick', (e) => {
-      // 如果双击的是进展摘要区域，不触发编辑
-      if (e.target.closest('[data-action="progress"]')) return;
       const card = e.target.closest('.task-card');
       if (card) {
         const taskId = card.dataset.taskId;
         this.openModal(taskId);
-      }
-    });
-
-    // 点击进展摘要（使用 click 而非 dblclick，避免与编辑冲突）
-    this.$board.addEventListener('click', (e) => {
-      const progressBtn = e.target.closest('[data-action="progress"]');
-      if (progressBtn) {
-        e.stopPropagation();
-        const taskId = progressBtn.dataset.taskId;
-        this.openProgressModal(taskId);
       }
     });
 
@@ -1543,22 +1576,26 @@ class UIManager {
       descHtml = `<div class="card-desc">${this.escapeHtml(task.description)}</div>`;
     }
 
-    // 进展摘要
-    const progressCount = (task.progress && task.progress.length) ? task.progress.length : 0;
-    const progressSummaryHtml = progressCount > 0 
-      ? `<div class="card-progress-summary" data-action="progress" data-task-id="${task.id}">💬 ${progressCount}条进展</div>`
-      : '';
+    // 进展预览（取最新一条进展的前30字符）
+    let progressPreviewHtml = '';
+    if (task.progress && task.progress.length > 0) {
+      const latestProgress = task.progress[task.progress.length - 1];
+      const previewText = latestProgress.text.length > 30
+        ? latestProgress.text.slice(0, 30) + '…'
+        : latestProgress.text;
+      progressPreviewHtml = `<div class="card-progress-preview"><span class="progress-label">💬</span>${this.escapeHtml(previewText)}</div>`;
+    }
 
     card.innerHTML = `
       <input type="checkbox" class="card-checkbox" data-task-id="${task.id}">
       <div class="card-title">${this.escapeHtml(task.title)}</div>
       ${descHtml}
+      ${progressPreviewHtml}
       <div class="card-meta">
         <span class="priority-tag ${priorityClass}">${priorityLabels[task.priority]}</span>
         ${tagsHtml}
         ${dueDateHtml}
       </div>
-      ${progressSummaryHtml}
     `;
 
     return card;
@@ -1703,6 +1740,21 @@ class UIManager {
               <input type="text" class="tag-input" id="inputTag" placeholder="输入标签后回车">
             </div>
           </div>
+          ${isEdit ? `
+          <div class="progress-section" id="progressSection">
+            <button class="progress-section-toggle" id="progressToggle" type="button">
+              <span>💬 进展记录 <span id="progressBadge" style="font-size:11px;color:var(--text-muted);font-weight:400;"></span></span>
+              <span class="toggle-icon">▼</span>
+            </button>
+            <div class="progress-section-body" id="progressBody">
+              <div class="progress-history" id="progressHistory"></div>
+              <div class="progress-add-bar">
+                <textarea id="progressInput" placeholder="输入进展内容…" rows="2"></textarea>
+                <button class="btn-progress-add" id="btnProgressAdd" type="button">添加</button>
+              </div>
+            </div>
+          </div>
+          ` : ''}
           <div class="form-actions">
             <button class="btn-secondary" id="btnModalCancel">取消</button>
             <button class="btn-primary" id="btnModalSave">${isEdit ? '保存修改' : '创建任务'}</button>
@@ -1776,6 +1828,104 @@ class UIManager {
       }
     });
 
+    // ===== 进展板块逻辑（仅编辑模式） =====
+    if (isEdit) {
+      const $progressSection = document.getElementById('progressSection');
+      const $progressToggle = document.getElementById('progressToggle');
+      const $progressBody = document.getElementById('progressBody');
+      const $progressHistory = document.getElementById('progressHistory');
+      const $progressBadge = document.getElementById('progressBadge');
+      const $progressInput = document.getElementById('progressInput');
+      const $btnProgressAdd = document.getElementById('btnProgressAdd');
+      let progressExpanded = false;
+
+      const formatTime = (timestamp) => {
+        const d = new Date(timestamp);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
+      const getProgressList = () => {
+        const t = this.tm.getById(taskIdOrNull);
+        return (t && Array.isArray(t.progress)) ? t.progress : [];
+      };
+
+      const renderHistory = () => {
+        const plist = getProgressList();
+        $progressBadge.textContent = plist.length > 0 ? `(${plist.length}条)` : '';
+        if (plist.length === 0) {
+          $progressHistory.innerHTML = '<div class="progress-empty">暂无进展记录，在下方添加第一条</div>';
+          return;
+        }
+        $progressHistory.innerHTML = plist.map((p, i) => ({...p, _rawIdx: i}))
+          .reverse()
+          .map(p => `
+            <div class="progress-item" data-progress-index="${p._rawIdx}">
+              <div class="progress-avatar">💬</div>
+              <div class="progress-content">
+                <div class="progress-text" id="progressText_${p._rawIdx}">${this.escapeHtml(p.text)}</div>
+                <div class="progress-time">${formatTime(p.time)}</div>
+              </div>
+              <button class="progress-delete" data-progress-index="${p._rawIdx}" title="编辑此进展" style="right:28px;opacity:0;">✏️</button>
+              <button class="progress-delete" data-progress-index="${p._rawIdx}" title="删除此进展">&times;</button>
+            </div>
+          `).join('');
+
+        // 绑定编辑和删除按钮
+        $progressHistory.querySelectorAll('.progress-delete').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.progressIndex, 10);
+            if (isNaN(idx)) return;
+            if (btn.textContent.trim() === '×') {
+              // 删除
+              if (confirm('确定要删除这条进展记录吗？')) {
+                this.tm.deleteProgress(taskIdOrNull, idx);
+                renderHistory();
+                this.refreshBoard();
+              }
+            } else {
+              // 编辑
+              this._startProgressEdit(taskIdOrNull, idx, renderHistory);
+            }
+          });
+        });
+      };
+
+      // 折叠/展开切换
+      $progressToggle.addEventListener('click', () => {
+        progressExpanded = !progressExpanded;
+        if (progressExpanded) {
+          $progressBody.classList.add('show');
+          $progressToggle.classList.add('expanded');
+        } else {
+          $progressBody.classList.remove('show');
+          $progressToggle.classList.remove('expanded');
+        }
+      });
+
+      // 添加进展
+      const addProgress = () => {
+        const text = $progressInput.value.trim();
+        if (!text) return;
+        this.tm.addProgress(taskIdOrNull, text);
+        $progressInput.value = '';
+        renderHistory();
+        this.refreshBoard();
+      };
+
+      $btnProgressAdd.addEventListener('click', addProgress);
+      $progressInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          addProgress();
+        }
+      });
+
+      // 初始渲染
+      renderHistory();
+    }
+
     // 关闭 Modal
     const closeModal = () => {
       this.$modalContainer.innerHTML = '';
@@ -1832,133 +1982,57 @@ class UIManager {
     setTimeout(() => $inputTitle.focus(), 100);
   }
 
-  /* ---------- 进展记录 Modal ---------- */
-  openProgressModal(taskId) {
+
+  /** 开始编辑进展记录（在模态框内切换为 inline 输入模式） */
+  _startProgressEdit(taskId, index, renderHistoryFn) {
+    const $textEl = document.getElementById('progressText_' + index);
+    if (!$textEl) return;
     const task = this.tm.getById(taskId);
-    if (!task) return;
-    const progressList = Array.isArray(task.progress) ? task.progress : [];
+    if (!task || !Array.isArray(task.progress) || index >= task.progress.length) return;
+    const originalText = task.progress[index].text;
 
-    const formatTime = (timestamp) => {
-      const d = new Date(timestamp);
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
-
-    const buildHistoryHtml = (plist) => {
-      if (plist.length === 0) {
-        return '<div class="progress-empty">暂无进展记录，在下方添加第一条</div>';
-      }
-      return plist.map((p, i) => ({...p, _rawIdx: i}))
-        .sort((a, b) => b.time - a.time)
-        .map(p => `
-          <div class="progress-item">
-            <div class="progress-avatar">💬</div>
-            <div class="progress-content">
-              <div class="progress-text">${this.escapeHtml(p.text)}</div>
-              <div class="progress-time">${formatTime(p.time)}</div>
-            </div>
-            <button class="progress-delete" data-progress-index="${p._rawIdx}" title="删除此进展">&times;</button>
-          </div>
-        `).join('');
-    };
-
-    const modalHtml = `
-      <div class="modal-overlay" id="progressOverlay">
-        <div class="modal" id="progressModal" style="width:500px;">
-          <h2>📝 进展记录</h2>
-          <div style="margin-bottom:14px;font-size:14px;color:var(--text-secondary);">
-            任务：<strong style="color:var(--text-primary);">${this.escapeHtml(task.title)}</strong>
-          </div>
-          <div class="progress-history" id="progressHistory">${buildHistoryHtml(progressList)}</div>
-          <div class="progress-add-bar">
-            <textarea id="progressInput" placeholder="输入进展内容…" rows="2"></textarea>
-            <button class="btn-progress-add" id="btnProgressAdd">添加</button>
-          </div>
-          <div class="form-actions" style="margin-top:12px;">
-            <button class="btn-secondary" id="btnProgressClose">关闭</button>
-          </div>
+    $textEl.innerHTML = `
+      <div style="display:flex;gap:6px;align-items:flex-start;">
+        <textarea class="progress-edit-input" id="progressEditInput_${index}" rows="2" style="flex:1;padding:6px 10px;border:1px solid #7c8ce0;border-radius:6px;font-size:13px;font-family:inherit;color:var(--text-primary);outline:none;resize:none;">${this.escapeHtml(originalText)}</textarea>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+          <button class="progress-edit-save" data-idx="${index}" style="padding:4px 10px;background:#4f6ef7;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;">保存</button>
+          <button class="progress-edit-cancel" data-idx="${index}" style="padding:4px 10px;background:#f3f4f6;color:var(--text-primary);border:1px solid #d1d5db;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;">取消</button>
         </div>
       </div>
     `;
 
-    this.$modalContainer.innerHTML = modalHtml;
+    const $editInput = document.getElementById('progressEditInput_' + index);
+    if ($editInput) $editInput.focus();
 
-    const $overlay = document.getElementById('progressOverlay');
-    const $historyContainer = document.getElementById('progressHistory');
-    const $progressInput = document.getElementById('progressInput');
-    const $btnAdd = document.getElementById('btnProgressAdd');
-    const $btnClose = document.getElementById('btnProgressClose');
-
-    const closeModal = () => {
-      this.$modalContainer.innerHTML = '';
+    // 保存按钮
+    $textEl.querySelector('.progress-edit-save').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newText = $editInput ? $editInput.value.trim() : '';
+      if (!newText) return;
+      this.tm.updateProgress(taskId, index, newText);
+      renderHistoryFn();
       this.refreshBoard();
-    };
-
-    const renderHistory = () => {
-      const t = this.tm.getById(taskId);
-      if (!t) return;
-      const plist = Array.isArray(t.progress) ? t.progress : [];
-      $historyContainer.innerHTML = buildHistoryHtml(plist);
-      // 绑定删除事件
-      $historyContainer.querySelectorAll('.progress-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const idx = parseInt(btn.dataset.progressIndex, 10);
-          if (!isNaN(idx) && confirm('确定要删除这条进展记录吗？')) {
-            this.tm.deleteProgress(taskId, idx);
-            renderHistory();
-            this.refreshBoard();
-          }
-        });
-      });
-    };
-
-    const addProgress = () => {
-      const text = $progressInput.value.trim();
-      if (!text) return;
-      this.tm.addProgress(taskId, text);
-      $progressInput.value = '';
-      renderHistory();
-      this.refreshBoard();
-    };
-
-    $btnAdd.addEventListener('click', addProgress);
-    $progressInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        addProgress();
-      }
     });
 
-    $overlay.addEventListener('click', (e) => {
-      if (e.target === $overlay) closeModal();
+    // 取消按钮
+    $textEl.querySelector('.progress-edit-cancel').addEventListener('click', (e) => {
+      e.stopPropagation();
+      renderHistoryFn();
     });
-    $btnClose.addEventListener('click', closeModal);
 
-    const escHandler = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-        document.removeEventListener('keydown', escHandler);
-      }
-    };
-    document.addEventListener('keydown', escHandler);
-
-    // 初始绑定删除按钮
-    setTimeout(() => {
-      $historyContainer.querySelectorAll('.progress-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const idx = parseInt(btn.dataset.progressIndex, 10);
-          if (!isNaN(idx) && confirm('确定要删除这条进展记录吗？')) {
-            this.tm.deleteProgress(taskId, idx);
-            renderHistory();
-            this.refreshBoard();
-          }
-        });
+    // Enter 键保存（Shift+Enter 换行）
+    if ($editInput) {
+      $editInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          const newText = $editInput.value.trim();
+          if (!newText) return;
+          this.tm.updateProgress(taskId, index, newText);
+          renderHistoryFn();
+          this.refreshBoard();
+        }
       });
-    }, 0);
-
-    setTimeout(() => $progressInput.focus(), 150);
+    }
   }
 
   /* ---------- Toast 提示 ---------- */
