@@ -36,11 +36,7 @@
   --blur-glass: 8px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
@@ -152,9 +148,7 @@ body {
   border-radius: 10px;
 }
 
-.batch-bar.visible {
-  display: flex;
-}
+.batch-bar.visible { display: flex; }
 
 .batch-bar .batch-count {
   font-size: 13px;
@@ -174,9 +168,7 @@ body {
   transition: background var(--transition-fast);
 }
 
-.btn-batch-delete:hover {
-  background: #b91c1c;
-}
+.btn-batch-delete:hover { background: #b91c1c; }
 
 .btn-batch-cancel {
   padding: 6px 14px;
@@ -190,8 +182,48 @@ body {
   transition: all var(--transition-fast);
 }
 
-.btn-batch-cancel:hover {
-  background: #f3f4f6;
+.btn-batch-cancel:hover { background: #f3f4f6; }
+
+/* 数据目录控制 */
+.btn-data-dir {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--border-column);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-data-dir:hover {
+  background: #fff;
+  border-color: #7c8ce0;
+  color: var(--color-col-progress);
+}
+.data-dir-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.6);
+  border: 1px dashed var(--border-column);
+  border-radius: 6px;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-dir-indicator.file-mode {
+  color: #2f855a;
+  border-color: #5a9e6f;
+  background: rgba(230,245,234,0.6);
 }
 
 /* ==================== 看板三列布局 ==================== */
@@ -222,7 +254,6 @@ body {
   border-color: #bcc4f0;
 }
 
-/* 列顶装饰条 */
 .column::before {
   content: '';
   display: block;
@@ -289,7 +320,6 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* 卡片列表 */
 .card-list {
   display: flex;
   flex-direction: column;
@@ -324,16 +354,13 @@ body {
   border-color: rgba(0,0,0,0.1);
 }
 
-.task-card:active {
-  cursor: grabbing;
-}
+.task-card:active { cursor: grabbing; }
 
 .task-card.dragging {
   opacity: 0.5;
   transform: scale(0.96);
 }
 
-/* 复选框 */
 .task-card .card-checkbox {
   position: absolute;
   top: 10px;
@@ -352,7 +379,6 @@ body {
   opacity: 1;
 }
 
-/* 卡片标题 */
 .task-card .card-title {
   font-size: 14px;
   font-weight: 600;
@@ -363,7 +389,6 @@ body {
   transition: padding-left var(--transition-fast);
 }
 
-/* 卡片描述预览 */
 .task-card .card-desc {
   font-size: 12px;
   color: var(--text-secondary);
@@ -375,7 +400,6 @@ body {
   overflow: hidden;
 }
 
-/* 卡片进展预览 */
 .task-card .card-progress-preview {
   font-size: 11px;
   color: var(--text-muted);
@@ -395,7 +419,6 @@ body {
   margin-right: 2px;
 }
 
-/* 卡片底部信息行 */
 .task-card .card-meta {
   display: flex;
   align-items: center;
@@ -416,7 +439,6 @@ body {
   font-weight: 500;
 }
 
-/* 优先级标签 */
 .priority-tag {
   display: inline-flex;
   align-items: center;
@@ -428,27 +450,11 @@ body {
   white-space: nowrap;
 }
 
-.priority-tag.high {
-  background: var(--color-high-bg);
-  color: var(--color-high-text);
-}
+.priority-tag.high { background: var(--color-high-bg); color: var(--color-high-text); }
+.priority-tag.medium { background: var(--color-mid-bg); color: var(--color-mid-text); }
+.priority-tag.low { background: var(--color-low-bg); color: var(--color-low-text); }
 
-.priority-tag.medium {
-  background: var(--color-mid-bg);
-  color: var(--color-mid-text);
-}
-
-.priority-tag.low {
-  background: var(--color-low-bg);
-  color: var(--color-low-text);
-}
-
-/* 分类标签 */
-.category-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
+.category-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .category-tag {
   display: inline-block;
@@ -499,17 +505,9 @@ body {
   transition: background var(--transition-fast);
 }
 
-.context-menu .menu-item:hover {
-  background: #f3f4f6;
-}
-
-.context-menu .menu-item.danger {
-  color: #dc2626;
-}
-
-.context-menu .menu-item.danger:hover {
-  background: #fef2f2;
-}
+.context-menu .menu-item:hover { background: #f3f4f6; }
+.context-menu .menu-item.danger { color: #dc2626; }
+.context-menu .menu-item.danger:hover { background: #fef2f2; }
 
 .context-menu .menu-divider {
   height: 1px;
@@ -517,7 +515,7 @@ body {
   margin: 3px 8px;
 }
 
-/* ==================== Modal 弹窗 ==================== */
+/* ==================== Modal ==================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -560,9 +558,7 @@ body {
   color: var(--text-primary);
 }
 
-.modal .form-group {
-  margin-bottom: 14px;
-}
+.modal .form-group { margin-bottom: 14px; }
 
 .modal .form-group label {
   display: block;
@@ -595,12 +591,8 @@ body {
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
 }
 
-.modal .form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
+.modal .form-group textarea { resize: vertical; min-height: 80px; }
 
-/* 标签输入区 */
 .tag-input-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -639,9 +631,7 @@ body {
   transition: color var(--transition-fast);
 }
 
-.tag-input-wrapper .tag-chip .tag-remove:hover {
-  color: #dc2626;
-}
+.tag-input-wrapper .tag-chip .tag-remove:hover { color: #dc2626; }
 
 .tag-input-wrapper input.tag-input {
   border: none;
@@ -675,9 +665,7 @@ body {
   transition: background var(--transition-fast);
 }
 
-.btn-primary:hover {
-  background: #3b54d4;
-}
+.btn-primary:hover { background: #3b54d4; }
 
 .btn-secondary {
   padding: 8px 20px;
@@ -691,46 +679,25 @@ body {
   transition: background var(--transition-fast);
 }
 
-.btn-secondary:hover {
-  background: #e5e7eb;
-}
+.btn-secondary:hover { background: #e5e7eb; }
 
 /* ==================== 响应式 ==================== */
 @media (max-width: 900px) {
-  .board {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
+  .board { grid-template-columns: 1fr; gap: 14px; }
 }
 
 @media (min-width: 901px) and (max-width: 1100px) {
-  .board {
-    gap: 12px;
-  }
-  .task-card {
-    padding: 10px 12px;
-  }
+  .board { gap: 12px; }
+  .task-card { padding: 10px 12px; }
 }
 
 /* ==================== 滚动条美化 ==================== */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-/* ==================== Toast 提示 ==================== */
+/* ==================== Toast ==================== */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -758,8 +725,7 @@ body {
   to { opacity: 0; transform: translateX(-50%) translateY(12px); }
 }
 
-/* ==================== 进展记录相关（卡片内联预览 + 模态框内板块） ==================== */
-
+/* ==================== 进展记录相关 ==================== */
 .progress-section {
   margin-top: 6px;
   border: 1px solid #e5e7eb;
@@ -782,32 +748,18 @@ body {
   color: var(--text-primary);
   transition: background var(--transition-fast);
 }
-.progress-section-toggle:hover {
-  background: #f3f4f6;
-}
+.progress-section-toggle:hover { background: #f3f4f6; }
 .progress-section-toggle .toggle-icon {
   font-size: 11px;
   color: var(--text-muted);
   transition: transform var(--transition-fast);
 }
-.progress-section-toggle.expanded .toggle-icon {
-  transform: rotate(180deg);
-}
+.progress-section-toggle.expanded .toggle-icon { transform: rotate(180deg); }
 
-.progress-section-body {
-  display: none;
-  padding: 10px 14px 14px;
-  background: #fff;
-}
-.progress-section-body.show {
-  display: block;
-}
+.progress-section-body { display: none; padding: 10px 14px 14px; background: #fff; }
+.progress-section-body.show { display: block; }
 
-.progress-history {
-  max-height: 220px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-}
+.progress-history { max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
 
 .progress-item {
   display: flex;
@@ -818,12 +770,8 @@ body {
   position: relative;
   transition: background var(--transition-fast);
 }
-.progress-item:last-child {
-  border-bottom: none;
-}
-.progress-item:hover .progress-delete {
-  opacity: 1;
-}
+.progress-item:last-child { border-bottom: none; }
+.progress-item:hover .progress-delete { opacity: 1; }
 
 .progress-avatar {
   width: 28px;
@@ -839,21 +787,9 @@ body {
   font-weight: 600;
 }
 
-.progress-content {
-  flex: 1;
-  min-width: 0;
-}
-.progress-text {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.5;
-  word-break: break-word;
-}
-.progress-time {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 3px;
-}
+.progress-content { flex: 1; min-width: 0; }
+.progress-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; word-break: break-word; }
+.progress-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
 .progress-delete {
   opacity: 0;
@@ -872,24 +808,11 @@ body {
   flex-shrink: 0;
   transition: all var(--transition-fast);
 }
-.progress-delete:hover {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #dc2626;
-}
+.progress-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
-.progress-empty {
-  text-align: center;
-  padding: 24px 0;
-  color: var(--text-muted);
-  font-size: 13px;
-}
+.progress-empty { text-align: center; padding: 24px 0; color: var(--text-muted); font-size: 13px; }
 
-.progress-add-bar {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
+.progress-add-bar { display: flex; gap: 8px; align-items: flex-end; }
 .progress-add-bar textarea {
   flex: 1;
   min-height: 36px;
@@ -922,33 +845,25 @@ body {
   transition: background var(--transition-fast);
   flex-shrink: 0;
 }
-.btn-progress-add:hover {
-  background: #3b54d4;
-}
+.btn-progress-add:hover { background: #3b54d4; }
 </style>
 </head>
 <body>
 
 <!-- ==================== HTML 结构 ==================== -->
-
-<!-- 顶部导航 -->
 <header class="header">
-  <h1>📋 任务看板</h1>
+  <h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    📋 任务看板
+    <span class="data-dir-indicator" id="dataDirIndicator" title="当前数据存储位置">💾 localStorage</span>
+    <button class="btn-data-dir" id="btnDataDir" title="选择文件夹以将数据保存为文件">📁 设置数据目录</button>
+  </h1>
 
-  <!-- 统计看板 -->
   <div class="stats-bar" id="statsBar">
-    <div class="stat-item">
-      总任务 <span class="stat-num" id="statTotal">0</span>
-    </div>
-    <div class="stat-item done">
-      ✅ 已完成 <span class="stat-num" id="statDone">0</span>
-    </div>
-    <div class="stat-item undone">
-      ⏳ 未完成 <span class="stat-num" id="statUndone">0</span>
-    </div>
+    <div class="stat-item">总任务 <span class="stat-num" id="statTotal">0</span></div>
+    <div class="stat-item done">✅ 已完成 <span class="stat-num" id="statDone">0</span></div>
+    <div class="stat-item undone">⏳ 未完成 <span class="stat-num" id="statUndone">0</span></div>
   </div>
 
-  <!-- 筛选排序栏 -->
   <div class="filter-bar" id="filterBar">
     <label>优先级
       <select id="filterPriority">
@@ -959,9 +874,7 @@ body {
       </select>
     </label>
     <label>标签
-      <select id="filterTag">
-        <option value="all">全部</option>
-      </select>
+      <select id="filterTag"><option value="all">全部</option></select>
     </label>
     <label>截止日期
       <select id="filterDate">
@@ -980,7 +893,6 @@ body {
     </label>
   </div>
 
-  <!-- 批量操作栏 -->
   <div class="batch-bar" id="batchBar">
     <span class="batch-count" id="batchCount">已选择 0 项</span>
     <button class="btn-batch-delete" id="btnBatchDelete">删除选中</button>
@@ -988,46 +900,30 @@ body {
   </div>
 </header>
 
-<!-- 三列看板 -->
 <main class="board" id="board">
-  <!-- 进行中列 -->
   <div class="column col-progress" data-status="in-progress" id="colInProgress">
     <div class="column-header">
-      <span class="col-title">
-        🔄 进行中
-        <span class="col-count" id="countInProgress">0</span>
-      </span>
+      <span class="col-title">🔄 进行中 <span class="col-count" id="countInProgress">0</span></span>
       <button class="btn-add-task" data-status="in-progress" title="新增进行中任务">+</button>
     </div>
     <div class="card-list" id="listInProgress"></div>
   </div>
-
-  <!-- 待处理列 -->
   <div class="column col-todo" data-status="todo" id="colTodo">
     <div class="column-header">
-      <span class="col-title">
-        📌 待处理
-        <span class="col-count" id="countTodo">0</span>
-      </span>
+      <span class="col-title">📌 待处理 <span class="col-count" id="countTodo">0</span></span>
       <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
     </div>
     <div class="card-list" id="listTodo"></div>
   </div>
-
-  <!-- 已完成列 -->
   <div class="column col-done" data-status="done" id="colDone">
     <div class="column-header">
-      <span class="col-title">
-        ✅ 已完成
-        <span class="col-count" id="countDone">0</span>
-      </span>
+      <span class="col-title">✅ 已完成 <span class="col-count" id="countDone">0</span></span>
       <button class="btn-add-task" data-status="done" title="新增已完成任务">+</button>
     </div>
     <div class="card-list" id="listDone"></div>
   </div>
 </main>
 
-<!-- 右键菜单 -->
 <div class="context-menu" id="contextMenu">
   <button class="menu-item" data-action="edit">✏️ 编辑</button>
   <button class="menu-item" data-action="copy">📋 复制任务</button>
@@ -1039,25 +935,164 @@ body {
   <button class="menu-item danger" data-action="delete">🗑 删除</button>
 </div>
 
-<!-- Modal 弹窗容器 -->
 <div id="modalContainer"></div>
-
-<!-- Toast 容器 -->
 <div id="toastContainer"></div>
 
-<!-- ==================== JavaScript 核心逻辑 ==================== -->
 <script>
 'use strict';
 
 /* ============================
+ * DataStorage — 数据存储抽象层
+ * 支持：File System Access API（优先）+ localStorage（回退/备份）
+ * ============================ */
+class DataStorage {
+  constructor() {
+    this._mode = 'localStorage'; // 'localStorage' | 'fileSystem'
+    this._dirHandle = null;
+    this._dirName = '';
+    this._localKey = 'task-board-data';
+    this._configKey = 'task-board-config';
+    this._fsAvailable = (typeof window.showDirectoryPicker === 'function');
+  }
+
+  get mode() { return this._mode; }
+  get dirName() { return this._dirName; }
+  get fsAvailable() { return this._fsAvailable; }
+
+  async init() {
+    try {
+      const cfgRaw = localStorage.getItem(this._configKey);
+      if (!cfgRaw) return;
+      const cfg = JSON.parse(cfgRaw);
+      if (cfg.mode === 'fileSystem' && cfg.dirName && this._fsAvailable) {
+        try {
+          this._dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'desktop' });
+          if (this._dirHandle.name !== cfg.dirName) {
+            this._dirHandle = null;
+            this._mode = 'localStorage';
+            this._dirName = '';
+            this._saveConfig();
+            return;
+          }
+          this._mode = 'fileSystem';
+          this._dirName = cfg.dirName;
+          console.log(`📁 已恢复文件存储目录: ${this._dirName}`);
+        } catch (e) {
+          console.warn('恢复文件目录权限失败，使用 localStorage', e);
+          this._mode = 'localStorage';
+          this._dirHandle = null;
+          this._dirName = '';
+          this._saveConfig();
+        }
+      }
+    } catch (e) {
+      console.warn('DataStorage 初始化失败', e);
+    }
+  }
+
+  async selectDirectory() {
+    if (!this._fsAvailable) {
+      throw new Error('当前浏览器不支持 File System Access API（需要 Chrome 86+/Edge 86+）');
+    }
+    try {
+      const handle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'desktop' });
+      this._dirHandle = handle;
+      this._dirName = handle.name;
+      this._mode = 'fileSystem';
+      this._saveConfig();
+      return this._dirName;
+    } catch (e) {
+      if (e.name === 'AbortError') return null;
+      throw e;
+    }
+  }
+
+  switchToLocal() {
+    this._mode = 'localStorage';
+    this._dirHandle = null;
+    this._dirName = '';
+    this._saveConfig();
+  }
+
+  _saveConfig() {
+    const cfg = { mode: this._mode, dirName: this._dirName };
+    localStorage.setItem(this._configKey, JSON.stringify(cfg));
+  }
+
+  async loadFromFile() {
+    if (!this._dirHandle) throw new Error('未设置文件目录');
+    try {
+      let fileHandle;
+      try {
+        fileHandle = await this._dirHandle.getFileHandle('tasks.json');
+      } catch {
+        return [];
+      }
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      return JSON.parse(text);
+    } catch (e) {
+      console.warn('从文件读取数据失败', e);
+      throw e;
+    }
+  }
+
+  async saveToFile(data) {
+    if (!this._dirHandle) throw new Error('未设置文件目录');
+    try {
+      const fileHandle = await this._dirHandle.getFileHandle('tasks.json', { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(data, null, 2));
+      await writable.close();
+      return true;
+    } catch (e) {
+      console.error('写入文件失败', e);
+      throw e;
+    }
+  }
+
+  loadFromLocal() {
+    try {
+      const raw = localStorage.getItem(this._localKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.warn('localStorage 读取失败', e);
+      return [];
+    }
+  }
+
+  saveToLocal(data) {
+    try {
+      localStorage.setItem(this._localKey, JSON.stringify(data));
+    } catch (e) {
+      console.error('localStorage 写入失败', e);
+    }
+  }
+}
+
+/* ============================
  * TaskManager — 数据管理层
- * 负责：CRUD 操作 + localStorage 持久化
  * ============================ */
 class TaskManager {
-  constructor(storageKey = 'task-board-data') {
-    this.storageKey = storageKey;
-    this.tasks = this._loadFromStorage();
-    // 迁移旧数据（确保所有任务都有 tags 字段）
+  constructor(dataStorage) {
+    this._ds = dataStorage;
+    this.tasks = [];
+  }
+
+  async init() {
+    await this._ds.init();
+    if (this._ds.mode === 'fileSystem' && this._ds.fsAvailable) {
+      try {
+        this.tasks = await this._ds.loadFromFile();
+        console.log(`📁 已从文件加载 ${this.tasks.length} 个任务`);
+      } catch (e) {
+        console.warn('文件加载失败，回退到 localStorage', e);
+        this.tasks = this._ds.loadFromLocal();
+      }
+    } else {
+      this.tasks = this._ds.loadFromLocal();
+      console.log(`💾 已从 localStorage 加载 ${this.tasks.length} 个任务`);
+    }
     this.tasks = this.tasks.map(t => ({
       id: t.id || crypto.randomUUID(),
       title: t.title || '',
@@ -1069,48 +1104,41 @@ class TaskManager {
       createdAt: t.createdAt || Date.now(),
       progress: Array.isArray(t.progress) ? t.progress : []
     }));
-    this._saveToStorage();
+    await this._persist();
   }
 
-  /** 从 localStorage 读取数据 */
-  _loadFromStorage() {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      console.warn('localStorage 读取失败，将使用空数据', e);
-      return [];
+  async _persist() {
+    if (this._ds.mode === 'fileSystem' && this._ds.fsAvailable) {
+      try {
+        await this._ds.saveToFile(this.tasks);
+      } catch (e) {
+        console.warn('文件写入失败，使用 localStorage 备份', e);
+        this._ds.saveToLocal(this.tasks);
+      }
     }
+    this._ds.saveToLocal(this.tasks);
   }
 
-  /** 保存数据到 localStorage */
-  _saveToStorage() {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.tasks));
-    } catch (e) {
-      console.error('localStorage 写入失败', e);
-      this._showToast('⚠️ 数据保存失败，请检查浏览器存储空间');
-    }
+  async setFileDirectory() {
+    const dirName = await this._ds.selectDirectory();
+    if (!dirName) return null;
+    await this._persist();
+    return dirName;
   }
 
-  /** Toast 提示（简化版，由 UIManager 统一管理） */
-  _showToast(msg) {
-    // 由外部设置
-    if (this._toastFn) this._toastFn(msg);
+  async switchToLocalStorage() {
+    this._ds.switchToLocal();
+    await this._persist();
   }
 
-  /** 获取所有任务 */
-  getAll() {
-    return this.tasks;
-  }
+  get storageMode() { return this._ds.mode; }
+  get storageDirName() { return this._ds.dirName; }
 
-  /** 根据ID获取任务 */
-  getById(id) {
-    return this.tasks.find(t => t.id === id) || null;
-  }
+  getAll() { return this.tasks; }
 
-  /** 新增任务 */
-  add(taskData) {
+  getById(id) { return this.tasks.find(t => t.id === id) || null; }
+
+  async add(taskData) {
     const task = {
       id: crypto.randomUUID(),
       title: taskData.title || '未命名任务',
@@ -1119,40 +1147,37 @@ class TaskManager {
       priority: taskData.priority || 'medium',
       tags: Array.isArray(taskData.tags) ? [...taskData.tags] : [],
       status: taskData.status || 'todo',
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      progress: []
     };
     this.tasks.push(task);
-    this._saveToStorage();
+    await this._persist();
     return task;
   }
 
-  /** 更新任务 */
-  update(id, updates) {
+  async update(id, updates) {
     const idx = this.tasks.findIndex(t => t.id === id);
     if (idx === -1) return null;
     this.tasks[idx] = { ...this.tasks[idx], ...updates };
-    this._saveToStorage();
+    await this._persist();
     return this.tasks[idx];
   }
 
-  /** 删除任务 */
-  delete(id) {
+  async delete(id) {
     const idx = this.tasks.findIndex(t => t.id === id);
     if (idx === -1) return false;
     this.tasks.splice(idx, 1);
-    this._saveToStorage();
+    await this._persist();
     return true;
   }
 
-  /** 批量删除 */
-  deleteMany(ids) {
+  async deleteMany(ids) {
     const idSet = new Set(ids);
     this.tasks = this.tasks.filter(t => !idSet.has(t.id));
-    this._saveToStorage();
+    await this._persist();
   }
 
-  /** 复制任务 */
-  copy(id) {
+  async copy(id) {
     const original = this.getById(id);
     if (!original) return null;
     const copy = {
@@ -1163,90 +1188,65 @@ class TaskManager {
       progress: original.progress ? original.progress.map(p => ({...p})) : []
     };
     this.tasks.push(copy);
-    this._saveToStorage();
+    await this._persist();
     return copy;
   }
 
-  /** 添加进展记录 */
-  addProgress(taskId, text) {
+  async addProgress(taskId, text) {
     const task = this.getById(taskId);
     if (!task) return null;
     if (!Array.isArray(task.progress)) task.progress = [];
     const record = { text: text.trim(), time: Date.now() };
     task.progress.push(record);
-    this._saveToStorage();
+    await this._persist();
     return record;
   }
 
-  /** 删除进展记录 */
-  deleteProgress(taskId, index) {
+  async deleteProgress(taskId, index) {
     const task = this.getById(taskId);
     if (!task || !Array.isArray(task.progress)) return false;
     if (index < 0 || index >= task.progress.length) return false;
     task.progress.splice(index, 1);
-    this._saveToStorage();
+    await this._persist();
     return true;
   }
 
-  /** 更新进展记录内容（保留原时间） */
-  updateProgress(taskId, index, newText) {
+  async updateProgress(taskId, index, newText) {
     const task = this.getById(taskId);
     if (!task || !Array.isArray(task.progress)) return false;
     if (index < 0 || index >= task.progress.length) return false;
     task.progress[index].text = newText.trim();
-    this._saveToStorage();
+    await this._persist();
     return true;
   }
 
-  /** 获取筛选后的任务（不修改原数组） */
   getFilteredAndSorted(filters, sortBy) {
     let result = [...this.tasks];
-
-    // 优先级筛选
     if (filters.priority && filters.priority !== 'all') {
       result = result.filter(t => t.priority === filters.priority);
     }
-
-    // 标签筛选
     if (filters.tag && filters.tag !== 'all') {
       result = result.filter(t => t.tags && t.tags.includes(filters.tag));
     }
-
-    // 日期筛选
     if (filters.date && filters.date !== 'all') {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const todayEnd = new Date(todayStart.getTime() + 86400000);
-
       if (filters.date === 'today') {
-        result = result.filter(t => {
-          if (!t.dueDate) return false;
-          const d = new Date(t.dueDate + 'T00:00:00');
-          return d >= todayStart && d < todayEnd;
-        });
+        result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= todayStart && new Date(t.dueDate + 'T00:00:00') < todayEnd);
       } else if (filters.date === 'week') {
-        const dayOfWeek = now.getDay() || 7; // 周日为7
+        const dayOfWeek = now.getDay() || 7;
         const weekStart = new Date(todayStart);
-        weekStart.setDate(weekStart.getDate() - dayOfWeek + 1); // 周一
+        weekStart.setDate(weekStart.getDate() - dayOfWeek + 1);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 7);
-        result = result.filter(t => {
-          if (!t.dueDate) return false;
-          const d = new Date(t.dueDate + 'T00:00:00');
-          return d >= weekStart && d < weekEnd;
-        });
+        result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= weekStart && new Date(t.dueDate + 'T00:00:00') < weekEnd);
       } else if (filters.date === 'month') {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        result = result.filter(t => {
-          if (!t.dueDate) return false;
-          const d = new Date(t.dueDate + 'T00:00:00');
-          return d >= monthStart && d < monthEnd;
-        });
+        result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= monthStart && new Date(t.dueDate + 'T00:00:00') < monthEnd);
       }
     }
-
-    // 排序
     if (sortBy === 'dueDate') {
       result.sort((a, b) => {
         if (!a.dueDate && !b.dueDate) return 0;
@@ -1258,25 +1258,17 @@ class TaskManager {
       const order = { high: 0, medium: 1, low: 2 };
       result.sort((a, b) => (order[a.priority] ?? 1) - (order[b.priority] ?? 1));
     } else {
-      // 默认按创建时间倒序
       result.sort((a, b) => b.createdAt - a.createdAt);
     }
-
     return result;
   }
 
-  /** 获取所有使用过的标签 */
   getAllTags() {
     const tagSet = new Set();
-    this.tasks.forEach(t => {
-      if (Array.isArray(t.tags)) {
-        t.tags.forEach(tag => tagSet.add(tag));
-      }
-    });
+    this.tasks.forEach(t => { if (Array.isArray(t.tags)) t.tags.forEach(tag => tagSet.add(tag)); });
     return [...tagSet].sort();
   }
 
-  /** 获取统计数据 */
   getStats() {
     const total = this.tasks.length;
     const done = this.tasks.filter(t => t.status === 'done').length;
@@ -1286,51 +1278,37 @@ class TaskManager {
 
 /* ============================
  * UIManager — UI 渲染与交互层
- * 负责：渲染看板、卡片、Modal、右键菜单等
  * ============================ */
 class UIManager {
   constructor(taskManager) {
     this.tm = taskManager;
     this.draggingTaskId = null;
-    this.selectedCardIds = new Set(); // 批量选中的卡片ID集合
-    this.contextMenuTargetId = null;   // 右键菜单目标卡片ID
-
-    // DOM 引用缓存
+    this.selectedCardIds = new Set();
+    this.contextMenuTargetId = null;
     this.cacheDom();
-
-    // 绑定事件
     this.bindEvents();
-
-    // 初始渲染
     this.refreshAll();
+    this.updateDataDirIndicator();
   }
 
   cacheDom() {
     this.$board = document.getElementById('board');
-    this.$statsBar = document.getElementById('statsBar');
-    this.$filterBar = document.getElementById('filterBar');
     this.$batchBar = document.getElementById('batchBar');
     this.$batchCount = document.getElementById('batchCount');
     this.$contextMenu = document.getElementById('contextMenu');
     this.$modalContainer = document.getElementById('modalContainer');
     this.$toastContainer = document.getElementById('toastContainer');
-
-    // 统计数字
     this.$statTotal = document.getElementById('statTotal');
     this.$statDone = document.getElementById('statDone');
     this.$statUndone = document.getElementById('statUndone');
-
-    // 筛选控件
     this.$filterPriority = document.getElementById('filterPriority');
     this.$filterTag = document.getElementById('filterTag');
     this.$filterDate = document.getElementById('filterDate');
     this.$sortBy = document.getElementById('sortBy');
-
-    // 批量操作按钮
     this.$btnBatchDelete = document.getElementById('btnBatchDelete');
     this.$btnBatchCancel = document.getElementById('btnBatchCancel');
-
-    // 列相关
+    this.$btnDataDir = document.getElementById('btnDataDir');
+    this.$dataDirIndicator = document.getElementById('dataDirIndicator');
     this.columnMap = {
       'todo': { list: document.getElementById('listTodo'), count: document.getElementById('countTodo') },
       'in-progress': { list: document.getElementById('listInProgress'), count: document.getElementById('countInProgress') },
@@ -1338,9 +1316,7 @@ class UIManager {
     };
   }
 
-  /* ---------- 事件绑定（事件委托） ---------- */
   bindEvents() {
-    // 新增任务按钮
     document.querySelectorAll('.btn-add-task').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const status = e.currentTarget.dataset.status;
@@ -1348,16 +1324,11 @@ class UIManager {
       });
     });
 
-    // 看板事件委托：双击编辑、拖拽、复选框
     this.$board.addEventListener('dblclick', (e) => {
       const card = e.target.closest('.task-card');
-      if (card) {
-        const taskId = card.dataset.taskId;
-        this.openModal(taskId);
-      }
+      if (card) this.openModal(card.dataset.taskId);
     });
 
-    // 拖拽事件（HTML5 Drag & Drop）
     this.$board.addEventListener('dragstart', (e) => {
       const card = e.target.closest('.task-card');
       if (!card) return;
@@ -1371,37 +1342,27 @@ class UIManager {
       const card = e.target.closest('.task-card');
       if (card) card.classList.remove('dragging');
       this.draggingTaskId = null;
-      // 移除所有列的高亮
       document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
     });
 
-    // 让列接受拖放
     document.querySelectorAll('.column').forEach(column => {
       column.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         column.classList.add('drag-over');
       });
-
       column.addEventListener('dragleave', (e) => {
-        // 仅在离开列本身时移除高亮
-        if (!column.contains(e.relatedTarget)) {
-          column.classList.remove('drag-over');
-        }
+        if (!column.contains(e.relatedTarget)) column.classList.remove('drag-over');
       });
-
       column.addEventListener('drop', (e) => {
         e.preventDefault();
         column.classList.remove('drag-over');
         const taskId = e.dataTransfer.getData('text/plain');
         const newStatus = column.dataset.status;
-        if (taskId && newStatus) {
-          this.moveTask(taskId, newStatus);
-        }
+        if (taskId && newStatus) this.moveTask(taskId, newStatus);
       });
     });
 
-    // 右键菜单
     this.$board.addEventListener('contextmenu', (e) => {
       const card = e.target.closest('.task-card');
       if (card) {
@@ -1411,36 +1372,26 @@ class UIManager {
       }
     });
 
-    // 点击其他地方关闭右键菜单
     document.addEventListener('click', (e) => {
-      if (!this.$contextMenu.contains(e.target)) {
-        this.hideContextMenu();
-      }
+      if (!this.$contextMenu.contains(e.target)) this.hideContextMenu();
     });
 
-    // 右键菜单项点击
     this.$contextMenu.addEventListener('click', (e) => {
       const menuItem = e.target.closest('.menu-item');
       if (!menuItem) return;
-      const action = menuItem.dataset.action;
-      this.handleContextAction(action, this.contextMenuTargetId);
+      this.handleContextAction(menuItem.dataset.action, this.contextMenuTargetId);
       this.hideContextMenu();
     });
 
-    // 复选框变化
     this.$board.addEventListener('change', (e) => {
       if (e.target.classList.contains('card-checkbox')) {
         const taskId = e.target.dataset.taskId;
-        if (e.target.checked) {
-          this.selectedCardIds.add(taskId);
-        } else {
-          this.selectedCardIds.delete(taskId);
-        }
+        if (e.target.checked) this.selectedCardIds.add(taskId);
+        else this.selectedCardIds.delete(taskId);
         this.updateBatchBar();
       }
     });
 
-    // 批量删除
     this.$btnBatchDelete.addEventListener('click', () => {
       if (this.selectedCardIds.size === 0) return;
       if (confirm(`确定要删除选中的 ${this.selectedCardIds.size} 个任务吗？此操作不可撤销。`)) {
@@ -1452,25 +1403,20 @@ class UIManager {
       }
     });
 
-    // 取消批量选择
     this.$btnBatchCancel.addEventListener('click', () => {
       this.selectedCardIds.clear();
       this.updateBatchBar();
       this.refreshAll();
     });
 
-    // 筛选排序控件变化
     [this.$filterPriority, this.$filterTag, this.$filterDate, this.$sortBy].forEach(el => {
       el.addEventListener('change', () => this.refreshBoard());
     });
 
-    // 页面关闭前保存数据
-    window.addEventListener('beforeunload', () => {
-      this.tm._saveToStorage();
-    });
+    // 数据目录按钮
+    this.$btnDataDir.addEventListener('click', () => this.handleDataDir());
   }
 
-  /* ---------- 数据刷新 ---------- */
   refreshAll() {
     this.refreshBoard();
     this.refreshStats();
@@ -1485,35 +1431,18 @@ class UIManager {
     };
     const sortBy = this.$sortBy.value;
     const filteredTasks = this.tm.getFilteredAndSorted(filters, sortBy);
-
-    // 按状态分组
     const grouped = { 'todo': [], 'in-progress': [], 'done': [] };
     filteredTasks.forEach(t => {
       if (grouped[t.status]) grouped[t.status].push(t);
       else grouped['todo'].push(t);
     });
-
-    // 渲染每列
     Object.entries(grouped).forEach(([status, tasks]) => {
       const col = this.columnMap[status];
       if (!col) return;
       col.list.innerHTML = '';
       col.count.textContent = tasks.length;
-
-      if (tasks.length === 0) {
-        const placeholder = document.createElement('div');
-        placeholder.className = 'column-placeholder';
-        placeholder.textContent = '拖放任务到此处';
-        col.list.appendChild(placeholder);
-      } else {
-        tasks.forEach(task => {
-          const card = this.createCardElement(task);
-          col.list.appendChild(card);
-        });
-      }
+      tasks.forEach(task => col.list.appendChild(this.createCardElement(task)));
     });
-
-    // 恢复复选框状态
     this.restoreCheckboxStates();
   }
 
@@ -1534,81 +1463,54 @@ class UIManager {
       opt.textContent = tag;
       this.$filterTag.appendChild(opt);
     });
-    // 恢复之前选中的值
-    if (tags.includes(currentValue)) {
-      this.$filterTag.value = currentValue;
-    }
+    if (tags.includes(currentValue)) this.$filterTag.value = currentValue;
   }
 
-  /* ---------- 卡片DOM创建 ---------- */
   createCardElement(task) {
     const card = document.createElement('div');
     card.className = 'task-card';
     card.dataset.taskId = task.id;
     card.draggable = true;
-
-    // 优先级标签文本
     const priorityLabels = { high: '🔴 高', medium: '🟡 中', low: '🟢 低' };
-    const priorityClass = task.priority;
-
-    // 截止日期显示
     let dueDateHtml = '';
     if (task.dueDate) {
       const dueDate = new Date(task.dueDate + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const today = new Date(); today.setHours(0,0,0,0);
       const isOverdue = dueDate < today && task.status !== 'done';
-      const dateStr = task.dueDate;
-      dueDateHtml = `<span class="due-date ${isOverdue ? 'overdue' : ''}">📅 ${dateStr}${isOverdue ? ' (已逾期)' : ''}</span>`;
+      dueDateHtml = `<span class="due-date ${isOverdue ? 'overdue' : ''}">📅 ${task.dueDate}${isOverdue ? ' (已逾期)' : ''}</span>`;
     }
-
-    // 标签
     let tagsHtml = '';
     if (task.tags && task.tags.length > 0) {
-      tagsHtml = '<span class="category-tags">' +
-        task.tags.map(t => `<span class="category-tag">${this.escapeHtml(t)}</span>`).join('') +
-        '</span>';
+      tagsHtml = '<span class="category-tags">' + task.tags.map(t => `<span class="category-tag">${this.escapeHtml(t)}</span>`).join('') + '</span>';
     }
-
-    // 描述预览
     let descHtml = '';
-    if (task.description) {
-      descHtml = `<div class="card-desc">${this.escapeHtml(task.description)}</div>`;
-    }
-
-    // 进展预览（取最新一条进展的前30字符）
+    if (task.description) descHtml = `<div class="card-desc">${this.escapeHtml(task.description)}</div>`;
     let progressPreviewHtml = '';
     if (task.progress && task.progress.length > 0) {
       const latestProgress = task.progress[task.progress.length - 1];
-      const previewText = latestProgress.text.length > 30
-        ? latestProgress.text.slice(0, 30) + '…'
-        : latestProgress.text;
+      const previewText = latestProgress.text.length > 30 ? latestProgress.text.slice(0, 30) + '…' : latestProgress.text;
       progressPreviewHtml = `<div class="card-progress-preview"><span class="progress-label">💬</span>${this.escapeHtml(previewText)}</div>`;
     }
-
     card.innerHTML = `
       <input type="checkbox" class="card-checkbox" data-task-id="${task.id}">
       <div class="card-title">${this.escapeHtml(task.title)}</div>
       ${descHtml}
       ${progressPreviewHtml}
       <div class="card-meta">
-        <span class="priority-tag ${priorityClass}">${priorityLabels[task.priority]}</span>
+        <span class="priority-tag ${task.priority}">${priorityLabels[task.priority]}</span>
         ${tagsHtml}
         ${dueDateHtml}
       </div>
     `;
-
     return card;
   }
 
-  /** HTML 转义 */
   escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
 
-  /* ---------- 复选框状态恢复 ---------- */
   restoreCheckboxStates() {
     this.selectedCardIds.forEach(taskId => {
       const cb = document.querySelector(`.card-checkbox[data-task-id="${taskId}"]`);
@@ -1617,7 +1519,6 @@ class UIManager {
     this.updateBatchBar();
   }
 
-  /* ---------- 批量操作栏 ---------- */
   updateBatchBar() {
     if (this.selectedCardIds.size > 0) {
       this.$batchBar.classList.add('visible');
@@ -1627,24 +1528,18 @@ class UIManager {
     }
   }
 
-  /* ---------- 任务移动 ---------- */
   moveTask(taskId, newStatus) {
     const task = this.tm.getById(taskId);
-    if (!task) return;
-    if (task.status === newStatus) return; // 相同列不操作
+    if (!task || task.status === newStatus) return;
     this.tm.update(taskId, { status: newStatus });
     this.refreshAll();
     const statusLabels = { 'todo': '待处理', 'in-progress': '进行中', 'done': '已完成' };
     this.showToast(`已移至「${statusLabels[newStatus]}」`);
   }
 
-  /* ---------- 右键菜单 ---------- */
   showContextMenu(x, y) {
     this.$contextMenu.classList.add('show');
-    // 确保菜单不超出窗口
-    const menuRect = this.$contextMenu.getBoundingClientRect();
-    let left = x;
-    let top = y;
+    let left = x, top = y;
     if (left + 160 > window.innerWidth) left = window.innerWidth - 170;
     if (top + 220 > window.innerHeight) top = window.innerHeight - 230;
     this.$contextMenu.style.left = left + 'px';
@@ -1660,28 +1555,17 @@ class UIManager {
     if (!taskId) return;
     const task = this.tm.getById(taskId);
     if (!task) return;
-
     switch (action) {
-      case 'edit':
-        this.openModal(taskId);
-        break;
-      case 'copy':
+      case 'edit': this.openModal(taskId); break;
+      case 'copy': {
         const copy = this.tm.copy(taskId);
-        if (copy) {
-          this.refreshAll();
-          this.showToast('已复制任务');
-        }
+        if (copy) { this.refreshAll(); this.showToast('已复制任务'); }
         break;
-      case 'move-todo':
-        this.moveTask(taskId, 'todo');
-        break;
-      case 'move-progress':
-        this.moveTask(taskId, 'in-progress');
-        break;
-      case 'move-done':
-        this.moveTask(taskId, 'done');
-        break;
-      case 'delete':
+      }
+      case 'move-todo': this.moveTask(taskId, 'todo'); break;
+      case 'move-progress': this.moveTask(taskId, 'in-progress'); break;
+      case 'move-done': this.moveTask(taskId, 'done'); break;
+      case 'delete': {
         if (confirm('确定要删除这个任务吗？')) {
           this.tm.delete(taskId);
           this.selectedCardIds.delete(taskId);
@@ -1690,51 +1574,75 @@ class UIManager {
           this.showToast('已删除任务');
         }
         break;
+      }
     }
   }
 
-  /* ---------- Modal 弹窗（新增 / 编辑） ---------- */
+  /* ---------- 数据目录管理 ---------- */
+  updateDataDirIndicator() {
+    const mode = this.tm.storageMode;
+    if (mode === 'fileSystem') {
+      this.$dataDirIndicator.textContent = `📁 ${this.tm.storageDirName}/tasks.json`;
+      this.$dataDirIndicator.className = 'data-dir-indicator file-mode';
+      this.$btnDataDir.textContent = '🔄 切换回 localStorage';
+    } else {
+      this.$dataDirIndicator.textContent = '💾 localStorage';
+      this.$dataDirIndicator.className = 'data-dir-indicator';
+      this.$btnDataDir.textContent = '📁 设置数据目录';
+    }
+  }
+
+  async handleDataDir() {
+    if (this.tm.storageMode === 'fileSystem') {
+      if (!confirm('切换回 localStorage 模式后，数据将不再自动保存到文件。\n\n（已保存的 tasks.json 文件不会被删除）')) return;
+      await this.tm.switchToLocalStorage();
+      this.refreshAll();
+      this.updateDataDirIndicator();
+      this.showToast('已切换回 localStorage 模式');
+    } else {
+      try {
+        const dirName = await this.tm.setFileDirectory();
+        if (dirName) {
+          this.refreshAll();
+          this.updateDataDirIndicator();
+          this.showToast(`数据目录已设置为「${dirName}」`);
+        }
+      } catch (e) {
+        console.error(e);
+        this.showToast('⚠️ 设置失败: ' + e.message);
+      }
+    }
+  }
+
+  /* ---------- Modal ---------- */
   openModal(taskIdOrNull, presetStatus) {
     const isEdit = taskIdOrNull !== null;
     const task = isEdit ? this.tm.getById(taskIdOrNull) : null;
     const initialStatus = isEdit ? task.status : (presetStatus || 'todo');
     const initialTags = isEdit ? (task.tags || []) : [];
 
-    // 构建 Modal HTML
     const modalHtml = `
       <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modal">
           <h2>${isEdit ? '编辑任务' : '新增任务'}</h2>
-          <div class="form-group">
-            <label>标题 *</label>
-            <input type="text" id="inputTitle" value="${isEdit ? this.escapeHtml(task.title) : ''}" placeholder="输入任务标题" autofocus>
-          </div>
-          <div class="form-group">
-            <label>描述</label>
-            <textarea id="inputDesc" placeholder="添加详细描述（可选）">${isEdit ? this.escapeHtml(task.description) : ''}</textarea>
-          </div>
-          <div class="form-group">
-            <label>截止日期</label>
-            <input type="date" id="inputDueDate" value="${isEdit ? task.dueDate : ''}">
-          </div>
-          <div class="form-group">
-            <label>优先级</label>
+          <div class="form-group"><label>标题 *</label><input type="text" id="inputTitle" value="${isEdit ? this.escapeHtml(task.title) : ''}" placeholder="输入任务标题" autofocus></div>
+          <div class="form-group"><label>描述</label><textarea id="inputDesc" placeholder="添加详细描述（可选）">${isEdit ? this.escapeHtml(task.description) : ''}</textarea></div>
+          <div class="form-group"><label>截止日期</label><input type="date" id="inputDueDate" value="${isEdit ? task.dueDate : ''}"></div>
+          <div class="form-group"><label>优先级</label>
             <select id="inputPriority">
               <option value="high" ${(isEdit && task.priority === 'high') ? 'selected' : ''}>🔴 高优先级</option>
               <option value="medium" ${(!isEdit || task.priority === 'medium') ? 'selected' : ''}>🟡 中优先级</option>
               <option value="low" ${(isEdit && task.priority === 'low') ? 'selected' : ''}>🟢 低优先级</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>状态</label>
+          <div class="form-group"><label>状态</label>
             <select id="inputStatus">
               <option value="todo" ${initialStatus === 'todo' ? 'selected' : ''}>📌 待处理</option>
               <option value="in-progress" ${initialStatus === 'in-progress' ? 'selected' : ''}>🔄 进行中</option>
               <option value="done" ${initialStatus === 'done' ? 'selected' : ''}>✅ 已完成</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>标签</label>
+          <div class="form-group"><label>标签</label>
             <div class="tag-input-wrapper" id="tagWrapper">
               ${initialTags.map(tag => `<span class="tag-chip"><span>${this.escapeHtml(tag)}</span><span class="tag-remove" data-tag="${this.escapeHtml(tag)}">&times;</span></span>`).join('')}
               <input type="text" class="tag-input" id="inputTag" placeholder="输入标签后回车">
@@ -1765,9 +1673,7 @@ class UIManager {
 
     this.$modalContainer.innerHTML = modalHtml;
 
-    // 获取当前 Modal 中的引用
     const $overlay = document.getElementById('modalOverlay');
-    const $modal = document.getElementById('modal');
     const $inputTitle = document.getElementById('inputTitle');
     const $inputDesc = document.getElementById('inputDesc');
     const $inputDueDate = document.getElementById('inputDueDate');
@@ -1777,11 +1683,8 @@ class UIManager {
     const $inputTag = document.getElementById('inputTag');
     let currentTags = [...initialTags];
 
-    // 标签管理函数
     const renderTags = () => {
-      // 保留 input
-      const chips = $tagWrapper.querySelectorAll('.tag-chip');
-      chips.forEach(c => c.remove());
+      $tagWrapper.querySelectorAll('.tag-chip').forEach(c => c.remove());
       currentTags.forEach(tag => {
         const chip = document.createElement('span');
         chip.className = 'tag-chip';
@@ -1796,41 +1699,27 @@ class UIManager {
 
     const addTag = (tagName) => {
       const trimmed = tagName.trim();
-      if (!trimmed) return;
-      if (currentTags.includes(trimmed)) {
-        $inputTag.value = '';
-        return;
-      }
+      if (!trimmed || currentTags.includes(trimmed)) { $inputTag.value = ''; return; }
       currentTags.push(trimmed);
       $inputTag.value = '';
       renderTags();
     };
 
-    // 标签输入事件
     $inputTag.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addTag($inputTag.value);
-      } else if (e.key === 'Backspace' && $inputTag.value === '' && currentTags.length > 0) {
-        // 删除最后一个标签
-        currentTags.pop();
-        renderTags();
-      }
+      if (e.key === 'Enter') { e.preventDefault(); addTag($inputTag.value); }
+      else if (e.key === 'Backspace' && $inputTag.value === '' && currentTags.length > 0) { currentTags.pop(); renderTags(); }
     });
 
-    // 标签移除事件（事件委托）
     $tagWrapper.addEventListener('click', (e) => {
       const removeBtn = e.target.closest('.tag-remove');
       if (removeBtn) {
-        const tag = removeBtn.dataset.tag;
-        currentTags = currentTags.filter(t => t !== tag);
+        currentTags = currentTags.filter(t => t !== removeBtn.dataset.tag);
         renderTags();
       }
     });
 
-    // ===== 进展板块逻辑（仅编辑模式） =====
+    // ===== 进展板块（仅编辑模式） =====
     if (isEdit) {
-      const $progressSection = document.getElementById('progressSection');
       const $progressToggle = document.getElementById('progressToggle');
       const $progressBody = document.getElementById('progressBody');
       const $progressHistory = document.getElementById('progressHistory');
@@ -1857,54 +1746,42 @@ class UIManager {
           $progressHistory.innerHTML = '<div class="progress-empty">暂无进展记录，在下方添加第一条</div>';
           return;
         }
-        $progressHistory.innerHTML = plist.map((p, i) => ({...p, _rawIdx: i}))
-          .reverse()
-          .map(p => `
-            <div class="progress-item" data-progress-index="${p._rawIdx}">
-              <div class="progress-avatar">💬</div>
-              <div class="progress-content">
-                <div class="progress-text" id="progressText_${p._rawIdx}">${this.escapeHtml(p.text)}</div>
-                <div class="progress-time">${formatTime(p.time)}</div>
-              </div>
-              <button class="progress-delete" data-progress-index="${p._rawIdx}" title="编辑此进展" style="right:28px;opacity:0;">✏️</button>
-              <button class="progress-delete" data-progress-index="${p._rawIdx}" title="删除此进展">&times;</button>
+        $progressHistory.innerHTML = plist.map((p, i) => ({...p, _rawIdx: i})).reverse().map(p => `
+          <div class="progress-item" data-progress-index="${p._rawIdx}">
+            <div class="progress-avatar">💬</div>
+            <div class="progress-content">
+              <div class="progress-text" id="progressText_${p._rawIdx}">${this.escapeHtml(p.text)}</div>
+              <div class="progress-time">${formatTime(p.time)}</div>
             </div>
-          `).join('');
+            <button class="progress-delete" data-progress-index="${p._rawIdx}" title="编辑此进展">✏️</button>
+            <button class="progress-delete" data-progress-index="${p._rawIdx}" title="删除此进展">&times;</button>
+          </div>
+        `).join('');
 
-        // 绑定编辑和删除按钮
         $progressHistory.querySelectorAll('.progress-delete').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const idx = parseInt(btn.dataset.progressIndex, 10);
             if (isNaN(idx)) return;
             if (btn.textContent.trim() === '×') {
-              // 删除
               if (confirm('确定要删除这条进展记录吗？')) {
                 this.tm.deleteProgress(taskIdOrNull, idx);
                 renderHistory();
                 this.refreshBoard();
               }
             } else {
-              // 编辑
               this._startProgressEdit(taskIdOrNull, idx, renderHistory);
             }
           });
         });
       };
 
-      // 折叠/展开切换
       $progressToggle.addEventListener('click', () => {
         progressExpanded = !progressExpanded;
-        if (progressExpanded) {
-          $progressBody.classList.add('show');
-          $progressToggle.classList.add('expanded');
-        } else {
-          $progressBody.classList.remove('show');
-          $progressToggle.classList.remove('expanded');
-        }
+        if (progressExpanded) { $progressBody.classList.add('show'); $progressToggle.classList.add('expanded'); }
+        else { $progressBody.classList.remove('show'); $progressToggle.classList.remove('expanded'); }
       });
 
-      // 添加进展
       const addProgress = () => {
         const text = $progressInput.value.trim();
         if (!text) return;
@@ -1916,81 +1793,43 @@ class UIManager {
 
       $btnProgressAdd.addEventListener('click', addProgress);
       $progressInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          addProgress();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addProgress(); }
       });
 
-      // 初始渲染
       renderHistory();
     }
 
-    // 关闭 Modal
-    const closeModal = () => {
-      this.$modalContainer.innerHTML = '';
-    };
+    const closeModal = () => { this.$modalContainer.innerHTML = ''; };
 
-    // 点击遮罩关闭
-    $overlay.addEventListener('click', (e) => {
-      if (e.target === $overlay) closeModal();
-    });
-
-    // 取消按钮
+    $overlay.addEventListener('click', (e) => { if (e.target === $overlay) closeModal(); });
     document.getElementById('btnModalCancel').addEventListener('click', closeModal);
 
-    // 保存按钮
     document.getElementById('btnModalSave').addEventListener('click', () => {
       const title = $inputTitle.value.trim();
-      if (!title) {
-        this.showToast('⚠️ 请输入任务标题');
-        $inputTitle.focus();
-        return;
-      }
-
+      if (!title) { this.showToast('⚠️ 请输入任务标题'); $inputTitle.focus(); return; }
       const taskData = {
-        title: title,
-        description: $inputDesc.value.trim(),
-        dueDate: $inputDueDate.value,
-        priority: $inputPriority.value,
-        status: $inputStatus.value,
-        tags: currentTags
+        title, description: $inputDesc.value.trim(), dueDate: $inputDueDate.value,
+        priority: $inputPriority.value, status: $inputStatus.value, tags: currentTags
       };
-
-      if (isEdit) {
-        this.tm.update(taskIdOrNull, taskData);
-        this.showToast('✅ 任务已更新');
-      } else {
-        this.tm.add(taskData);
-        this.showToast('✅ 任务已创建');
-      }
-
+      if (isEdit) { this.tm.update(taskIdOrNull, taskData); this.showToast('✅ 任务已更新'); }
+      else { this.tm.add(taskData); this.showToast('✅ 任务已创建'); }
       closeModal();
       this.refreshAll();
     });
 
-    // ESC 键关闭
     const escHandler = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-        document.removeEventListener('keydown', escHandler);
-      }
+      if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
     };
     document.addEventListener('keydown', escHandler);
-
-    // 聚焦标题输入框
     setTimeout(() => $inputTitle.focus(), 100);
   }
 
-
-  /** 开始编辑进展记录（在模态框内切换为 inline 输入模式） */
   _startProgressEdit(taskId, index, renderHistoryFn) {
     const $textEl = document.getElementById('progressText_' + index);
     if (!$textEl) return;
     const task = this.tm.getById(taskId);
     if (!task || !Array.isArray(task.progress) || index >= task.progress.length) return;
     const originalText = task.progress[index].text;
-
     $textEl.innerHTML = `
       <div style="display:flex;gap:6px;align-items:flex-start;">
         <textarea class="progress-edit-input" id="progressEditInput_${index}" rows="2" style="flex:1;padding:6px 10px;border:1px solid #7c8ce0;border-radius:6px;font-size:13px;font-family:inherit;color:var(--text-primary);outline:none;resize:none;">${this.escapeHtml(originalText)}</textarea>
@@ -2000,11 +1839,8 @@ class UIManager {
         </div>
       </div>
     `;
-
     const $editInput = document.getElementById('progressEditInput_' + index);
     if ($editInput) $editInput.focus();
-
-    // 保存按钮
     $textEl.querySelector('.progress-edit-save').addEventListener('click', (e) => {
       e.stopPropagation();
       const newText = $editInput ? $editInput.value.trim() : '';
@@ -2013,14 +1849,7 @@ class UIManager {
       renderHistoryFn();
       this.refreshBoard();
     });
-
-    // 取消按钮
-    $textEl.querySelector('.progress-edit-cancel').addEventListener('click', (e) => {
-      e.stopPropagation();
-      renderHistoryFn();
-    });
-
-    // Enter 键保存（Shift+Enter 换行）
+    $textEl.querySelector('.progress-edit-cancel').addEventListener('click', (e) => { e.stopPropagation(); renderHistoryFn(); });
     if ($editInput) {
       $editInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -2035,34 +1864,33 @@ class UIManager {
     }
   }
 
-  /* ---------- Toast 提示 ---------- */
   showToast(msg) {
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = msg;
     this.$toastContainer.appendChild(toast);
-
-    // 自动移除
-    setTimeout(() => {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 2000);
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2000);
   }
 }
 
 /* ============================
- * 应用初始化
+ * 应用初始化（异步）
  * ============================ */
-document.addEventListener('DOMContentLoaded', () => {
-  const taskManager = new TaskManager();
-  const uiManager = new UIManager(taskManager);
-
-  // 将 toast 方法注入 TaskManager
-  taskManager._toastFn = (msg) => uiManager.showToast(msg);
-
-  console.log('✅ 任务管理工具已就绪');
-  console.log(`   - 共加载 ${taskManager.tasks.length} 个任务`);
-  console.log('   - 数据存储在 localStorage key: task-board-data');
-});
+(async function init() {
+  try {
+    const ds = new DataStorage();
+    const taskManager = new TaskManager(ds);
+    await taskManager.init();
+    const uiManager = new UIManager(taskManager);
+    window.__app = { ds, taskManager, uiManager };
+    console.log('✅ 任务管理工具已就绪');
+    console.log(`   - 共加载 ${taskManager.tasks.length} 个任务`);
+    console.log(`   - 存储模式: ${ds.mode === 'fileSystem' ? '📁 文件系统 (' + ds.dirName + '/tasks.json)' : '💾 localStorage'}`);
+  } catch (e) {
+    console.error('初始化失败', e);
+    document.body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#dc2626;">⚠️ 应用初始化失败，请刷新页面重试。<br><small>' + e.message + '</small></div>';
+  }
+})();
 </script>
 </body>
 </html>
