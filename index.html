@@ -681,6 +681,428 @@ body {
 
 .btn-secondary:hover { background: #e5e7eb; }
 
+/* ==================== 每日待办按钮 ==================== */
+.btn-daily-todo {
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #fef6e4 0%, #fff9e6 100%);
+  border: 1px solid #f5c518;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b7791f;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(245,197,24,0.15);
+}
+.btn-daily-todo:hover {
+  background: linear-gradient(135deg, #f5c518 0%, #fbbf24 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245,197,24,0.3);
+  transform: translateY(-1px);
+}
+
+/* ==================== 每日待办侧边栏 ==================== */
+.daily-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.daily-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.daily-sidebar {
+  position: fixed;
+  top: 0;
+  right: -360px;
+  width: 360px;
+  max-width: 92vw;
+  height: 100vh;
+  z-index: 810;
+  background: #fffdf7;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.1), -1px 0 4px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.daily-sidebar.open { transform: translateX(-360px); }
+
+.daily-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #f0e8d0;
+  flex-shrink: 0;
+}
+.daily-sidebar-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.daily-sidebar-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+.daily-sidebar-close:hover { background: #f3f4f6; color: var(--text-primary); }
+
+.daily-date-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+.daily-date-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.daily-date-label small {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.btn-daily-calendar {
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-daily-calendar:hover { background: #f9fafb; border-color: #d1d5db; }
+
+/* 侧边栏主体内容区 */
+.daily-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* 空状态 */
+.daily-empty {
+  text-align: center;
+  padding: 40px 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.daily-empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+.btn-daily-create {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 16px;
+  background: #4f6ef7;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition-fast);
+}
+.btn-daily-create:hover { background: #3b54d4; }
+
+/* 每日待办卡片 */
+.daily-item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.daily-item-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 9px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  transition: all var(--transition-fast);
+  animation: cardIn 0.2s ease;
+}
+.daily-item-card:hover { box-shadow: var(--shadow-card-hover); border-color: rgba(0,0,0,0.1); }
+.daily-item-card.completed { opacity: 0.6; background: #f9fafb; }
+.daily-item-card.completed .daily-item-title { text-decoration: line-through; color: var(--text-muted); }
+
+.daily-item-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  accent-color: #4f6ef7;
+}
+.daily-item-check:checked { border-color: #4f6ef7; background: #4f6ef7; }
+
+.daily-item-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.daily-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+}
+.daily-item-priority {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.daily-item-delete {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #d1d5db;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  opacity: 0;
+}
+.daily-item-card:hover .daily-item-delete { opacity: 1; }
+.daily-item-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+/* 内联编辑 */
+.daily-item-edit-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #7c8ce0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+}
+
+/* 新增待办表单 */
+.daily-add-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 8px 0;
+}
+.daily-add-form input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.daily-add-form input:focus {
+  border-color: #7c8ce0;
+  box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+}
+.daily-add-form select {
+  padding: 7px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+}
+.daily-add-form .btn-confirm {
+  padding: 7px 14px;
+  background: #4f6ef7;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.daily-add-form .btn-confirm:hover { background: #3b54d4; }
+.daily-add-form .btn-cancel {
+  padding: 7px 12px;
+  background: #f3f4f6;
+  color: var(--text-secondary);
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.daily-add-form .btn-cancel:hover { background: #e5e7eb; }
+
+/* "新增待办"按钮 */
+.btn-daily-add-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 12px;
+  background: #f9fafb;
+  border: 2px dashed #e5e7eb;
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+.btn-daily-add-item:hover {
+  background: #f3f4f6;
+  border-color: #bcc4f0;
+  color: #4f6ef7;
+}
+
+/* 日历视图 */
+.daily-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.daily-calendar-month {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.daily-calendar-nav {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+.daily-calendar-nav:hover { background: #f3f4f6; }
+
+.daily-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.daily-calendar-day-header {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 6px 0;
+}
+.daily-calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: default;
+  color: #d1d5db;
+  transition: all var(--transition-fast);
+}
+.daily-calendar-cell.other-month { color: #e5e7eb; }
+.daily-calendar-cell.has-data {
+  cursor: pointer;
+  color: var(--text-primary);
+  background: #eef2ff;
+  font-weight: 600;
+}
+.daily-calendar-cell.has-data:hover { background: #dbe4ff; color: #4f6ef7; }
+.daily-calendar-cell.today {
+  box-shadow: 0 0 0 2px #4f6ef7;
+  color: #4f6ef7;
+  font-weight: 700;
+}
+.daily-calendar-cell.has-data.today { background: #eef2ff; }
+
+.btn-back-today {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 16px;
+  margin-top: 14px;
+  background: #eef2ff;
+  border: 1px solid #bcc4f0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4f6ef7;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+.btn-back-today:hover { background: #dbe4ff; }
+
 /* ==================== 响应式 ==================== */
 @media (max-width: 900px) {
   .board { grid-template-columns: 1fr; gap: 14px; }
@@ -856,6 +1278,7 @@ body {
     📋 任务看板
     <span class="data-dir-indicator" id="dataDirIndicator" title="当前数据存储位置">💾 localStorage</span>
     <button class="btn-data-dir" id="btnDataDir" title="选择文件夹以将数据保存为文件">📁 设置数据目录</button>
+    <button class="btn-daily-todo" id="btnDailyTodo">📅 每日待办</button>
   </h1>
 
   <div class="stats-bar" id="statsBar">
@@ -923,6 +1346,45 @@ body {
     <div class="card-list" id="listDone"></div>
   </div>
 </main>
+
+<!-- 每日待办侧边栏 -->
+<div class="daily-overlay" id="dailyOverlay"></div>
+<aside class="daily-sidebar" id="dailySidebar">
+  <div class="daily-sidebar-header">
+    <h2>📅 每日待办</h2>
+    <button class="daily-sidebar-close" id="dailySidebarClose">✕</button>
+  </div>
+  <div class="daily-date-bar" id="dailyDateBar">
+    <div class="daily-date-label">
+      <span id="dailyDateTitle"></span>
+      <small id="dailyDateWeekday"></small>
+    </div>
+    <button class="btn-daily-calendar" id="dailyGoCalendar">📆 查看历史</button>
+  </div>
+  <div class="daily-body" id="dailyBody">
+    <!-- 今日/日期待办视图 -->
+    <div id="dailyTodayView">
+      <div id="dailyEmptyHint" class="daily-empty">
+        <span class="daily-empty-icon">📭</span>
+        今天还没有待办<br>点击下方按钮创建
+      </div>
+      <button class="btn-daily-create" id="dailyCreateBtn" style="display:none;">＋ 创建今日待办</button>
+      <ul class="daily-item-list" id="dailyItemList"></ul>
+      <button class="btn-daily-add-item" id="dailyAddItemBtn" style="display:none;">＋ 新增待办</button>
+      <div id="dailyAddFormContainer"></div>
+    </div>
+    <!-- 日历视图（默认隐藏） -->
+    <div id="dailyCalendarView" style="display:none;">
+      <div class="daily-calendar-header">
+        <button class="daily-calendar-nav" id="dailyCalendarPrev">◀</button>
+        <span class="daily-calendar-month" id="dailyCalendarMonth"></span>
+        <button class="daily-calendar-nav" id="dailyCalendarNext">▶</button>
+      </div>
+      <div class="daily-calendar-grid" id="dailyCalendarGrid"></div>
+      <button class="btn-back-today" id="dailyBackToday">← 返回今日</button>
+    </div>
+  </div>
+</aside>
 
 <div class="context-menu" id="contextMenu">
   <button class="menu-item" data-action="edit">✏️ 编辑</button>
@@ -1874,6 +2336,469 @@ class UIManager {
 }
 
 /* ============================
+ * DailyTodoStorage — 每日待办数据存储
+ * ============================ */
+class DailyTodoStorage {
+  constructor() {
+    this._key = 'daily-todo-data';
+  }
+
+  loadAll() {
+    try {
+      const raw = localStorage.getItem(this._key);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.warn('每日待办数据读取失败', e);
+      return {};
+    }
+  }
+
+  saveAll(data) {
+    try {
+      localStorage.setItem(this._key, JSON.stringify(data));
+    } catch (e) {
+      console.error('每日待办数据写入失败', e);
+    }
+  }
+
+  getDate(dateStr) {
+    const all = this.loadAll();
+    return all[dateStr] || null;
+  }
+
+  setDate(dateStr, dayData) {
+    const all = this.loadAll();
+    all[dateStr] = dayData;
+    this.saveAll(all);
+  }
+
+  deleteDate(dateStr) {
+    const all = this.loadAll();
+    delete all[dateStr];
+    this.saveAll(all);
+  }
+
+  hasDate(dateStr) {
+    const all = this.loadAll();
+    return !!all[dateStr];
+  }
+
+  getAllDates() {
+    const all = this.loadAll();
+    return Object.keys(all).sort();
+  }
+}
+
+/* ============================
+ * DailyTodoManager — 每日待办数据管理层
+ * ============================ */
+class DailyTodoManager {
+  constructor(storage) {
+    this._storage = storage;
+  }
+
+  _todayStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  getTodayItems() {
+    const today = this._todayStr();
+    const dateData = this._storage.getDate(today);
+    return dateData ? dateData.items : null;
+  }
+
+  hasTodayList() {
+    return this._storage.hasDate(this._todayStr());
+  }
+
+  createTodayList() {
+    const today = this._todayStr();
+    if (this._storage.hasDate(today)) return false;
+    this._storage.setDate(today, { items: [] });
+    return true;
+  }
+
+  getItemsForDate(dateStr) {
+    const dateData = this._storage.getDate(dateStr);
+    return dateData ? dateData.items : null;
+  }
+
+  hasDate(dateStr) {
+    return this._storage.hasDate(dateStr);
+  }
+
+  addItem(dateStr, title, priority) {
+    const dateData = this._storage.getDate(dateStr);
+    if (!dateData) return null;
+    const item = {
+      id: crypto.randomUUID(),
+      title: title.trim(),
+      priority: priority || 'medium',
+      completed: false,
+      createdAt: Date.now()
+    };
+    dateData.items.push(item);
+    this._storage.setDate(dateStr, dateData);
+    return item;
+  }
+
+  updateItem(dateStr, itemId, updates) {
+    const dateData = this._storage.getDate(dateStr);
+    if (!dateData) return false;
+    const idx = dateData.items.findIndex(item => item.id === itemId);
+    if (idx === -1) return false;
+    dateData.items[idx] = { ...dateData.items[idx], ...updates };
+    this._storage.setDate(dateStr, dateData);
+    return true;
+  }
+
+  deleteItem(dateStr, itemId) {
+    const dateData = this._storage.getDate(dateStr);
+    if (!dateData) return false;
+    const idx = dateData.items.findIndex(item => item.id === itemId);
+    if (idx === -1) return false;
+    dateData.items.splice(idx, 1);
+    this._storage.setDate(dateStr, dateData);
+    return true;
+  }
+
+  toggleItem(dateStr, itemId) {
+    const dateData = this._storage.getDate(dateStr);
+    if (!dateData) return false;
+    const item = dateData.items.find(item => item.id === itemId);
+    if (!item) return false;
+    item.completed = !item.completed;
+    this._storage.setDate(dateStr, dateData);
+    return true;
+  }
+}
+
+/* ============================
+ * DailyTodoUI — 每日待办UI渲染与交互
+ * ============================ */
+class DailyTodoUI {
+  constructor(dailyManager) {
+    this._dm = dailyManager;
+    this._currentDate = this._todayStr();
+    this._isCalendarView = false;
+    this._calendarYear = null;
+    this._calendarMonth = null;
+    this._addFormVisible = false;
+
+    this._cacheDom();
+    this._bindEvents();
+  }
+
+  _todayStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  _cacheDom() {
+    this.$overlay = document.getElementById('dailyOverlay');
+    this.$sidebar = document.getElementById('dailySidebar');
+    this.$btnDailyTodo = document.getElementById('btnDailyTodo');
+    this.$sidebarClose = document.getElementById('dailySidebarClose');
+    this.$dateTitle = document.getElementById('dailyDateTitle');
+    this.$dateWeekday = document.getElementById('dailyDateWeekday');
+    this.$goCalendar = document.getElementById('dailyGoCalendar');
+    this.$todayView = document.getElementById('dailyTodayView');
+    this.$calendarView = document.getElementById('dailyCalendarView');
+    this.$dailyBody = document.getElementById('dailyBody');
+    this.$emptyHint = document.getElementById('dailyEmptyHint');
+    this.$createBtn = document.getElementById('dailyCreateBtn');
+    this.$itemList = document.getElementById('dailyItemList');
+    this.$addItemBtn = document.getElementById('dailyAddItemBtn');
+    this.$addFormContainer = document.getElementById('dailyAddFormContainer');
+    this.$calendarMonth = document.getElementById('dailyCalendarMonth');
+    this.$calendarGrid = document.getElementById('dailyCalendarGrid');
+    this.$calendarPrev = document.getElementById('dailyCalendarPrev');
+    this.$calendarNext = document.getElementById('dailyCalendarNext');
+    this.$backToday = document.getElementById('dailyBackToday');
+  }
+
+  _bindEvents() {
+    this.$btnDailyTodo.addEventListener('click', () => this.open());
+    this.$sidebarClose.addEventListener('click', () => this.close());
+    this.$overlay.addEventListener('click', () => this.close());
+    this.$goCalendar.addEventListener('click', () => this._showCalendarView());
+    this.$backToday.addEventListener('click', () => this._showTodayView());
+    this.$createBtn.addEventListener('click', () => this._createTodayList());
+    this.$addItemBtn.addEventListener('click', () => this._toggleAddForm());
+    this.$calendarPrev.addEventListener('click', () => this._navigateMonth(-1));
+    this.$calendarNext.addEventListener('click', () => this._navigateMonth(1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.$sidebar.classList.contains('open')) {
+        this.close();
+      }
+    });
+  }
+
+  open() {
+    this._currentDate = this._todayStr();
+    this._isCalendarView = false;
+    this._showTodayView();
+    this.$overlay.classList.add('show');
+    this.$sidebar.classList.add('open');
+  }
+
+  close() {
+    this.$overlay.classList.remove('show');
+    this.$sidebar.classList.remove('open');
+    this._addFormVisible = false;
+    this.$addFormContainer.innerHTML = '';
+  }
+
+  _showTodayView() {
+    this._isCalendarView = false;
+    this._currentDate = this._todayStr();
+    this.$todayView.style.display = '';
+    this.$calendarView.style.display = 'none';
+    this._updateDateDisplay();
+    this._renderToday();
+  }
+
+  _showCalendarView() {
+    this._isCalendarView = true;
+    this.$todayView.style.display = 'none';
+    this.$calendarView.style.display = '';
+    this._updateDateDisplay();
+    const todayDate = new Date();
+    this._calendarYear = todayDate.getFullYear();
+    this._calendarMonth = todayDate.getMonth();
+    this._renderCalendar();
+  }
+
+  _updateDateDisplay() {
+    const d = new Date(this._currentDate + 'T00:00:00');
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    this.$dateTitle.textContent = '📅 ' + this._currentDate;
+    this.$dateWeekday.textContent = weekdays[d.getDay()];
+  }
+
+  _createTodayList() {
+    this._dm.createTodayList();
+    this._renderToday();
+  }
+
+  _renderToday() {
+    const items = this._dm.getItemsForDate(this._currentDate);
+    const hasList = items !== null;
+    this._addFormVisible = false;
+    this.$addFormContainer.innerHTML = '';
+
+    if (!hasList) {
+      this.$emptyHint.style.display = '';
+      this.$createBtn.style.display = '';
+      this.$itemList.innerHTML = '';
+      this.$addItemBtn.style.display = 'none';
+      return;
+    }
+    this.$emptyHint.style.display = 'none';
+    this.$createBtn.style.display = 'none';
+    this.$addItemBtn.style.display = '';
+    this._renderItems(items);
+  }
+
+  _renderItems(items) {
+    this.$itemList.innerHTML = '';
+    if (!items || items.length === 0) {
+      this.$itemList.innerHTML = '<div class="daily-empty" style="padding:20px;"><span class="daily-empty-icon">📋</span>暂无待办项，点击下方按钮添加</div>';
+      return;
+    }
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'daily-item-card' + (item.completed ? ' completed' : '');
+      li.dataset.itemId = item.id;
+      const priorityEmoji = { high: '🔴', medium: '🟡', low: '🟢' };
+      li.innerHTML = `
+        <input type="checkbox" class="daily-item-check" ${item.completed ? 'checked' : ''}>
+        <div class="daily-item-content">
+          <span class="daily-item-title">${this._escape(item.title)}</span>
+          <span class="daily-item-priority">${priorityEmoji[item.priority] || '🟡'}</span>
+        </div>
+        <button class="daily-item-delete" title="删除此待办">×</button>
+      `;
+
+      // 勾选切换
+      li.querySelector('.daily-item-check').addEventListener('change', (e) => {
+        e.stopPropagation();
+        this._dm.toggleItem(this._currentDate, item.id);
+        this._renderToday();
+      });
+
+      // 删除
+      li.querySelector('.daily-item-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('确定要删除这条待办吗？')) {
+          this._dm.deleteItem(this._currentDate, item.id);
+          this._renderToday();
+        }
+      });
+
+      // 双击编辑标题
+      li.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        this._startEditTitle(item, li);
+      });
+
+      this.$itemList.appendChild(li);
+    });
+  }
+
+  _startEditTitle(item, liElement) {
+    const titleEl = liElement.querySelector('.daily-item-title');
+    if (!titleEl) return;
+    const originalTitle = item.title;
+    const $input = document.createElement('input');
+    $input.type = 'text';
+    $input.className = 'daily-item-edit-input';
+    $input.value = originalTitle;
+    $input.style.flex = '1';
+    titleEl.replaceWith($input);
+    $input.focus();
+    $input.select();
+
+    const saveEdit = () => {
+      const newTitle = $input.value.trim();
+      if (newTitle && newTitle !== originalTitle) {
+        this._dm.updateItem(this._currentDate, item.id, { title: newTitle });
+        this._renderToday();
+      } else {
+        $input.replaceWith(titleEl);
+      }
+    };
+
+    $input.addEventListener('blur', saveEdit);
+    $input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); $input.blur(); }
+      else if (e.key === 'Escape') { $input.value = originalTitle; $input.blur(); }
+    });
+  }
+
+  _toggleAddForm() {
+    if (this._addFormVisible) {
+      this._addFormVisible = false;
+      this.$addFormContainer.innerHTML = '';
+      return;
+    }
+    this._addFormVisible = true;
+    this.$addFormContainer.innerHTML = `
+      <div class="daily-add-form">
+        <input type="text" id="dailyAddInput" placeholder="输入待办标题" autofocus>
+        <select id="dailyAddPriority">
+          <option value="high">🔴 高</option>
+          <option value="medium" selected>🟡 中</option>
+          <option value="low">🟢 低</option>
+        </select>
+        <button class="btn-confirm" id="dailyAddConfirm">添加</button>
+        <button class="btn-cancel" id="dailyAddCancel">取消</button>
+      </div>
+    `;
+
+    const $input = document.getElementById('dailyAddInput');
+    const $priority = document.getElementById('dailyAddPriority');
+    const $confirm = document.getElementById('dailyAddConfirm');
+    const $cancel = document.getElementById('dailyAddCancel');
+
+    const doAdd = () => {
+      const title = $input.value.trim();
+      if (!title) { $input.focus(); return; }
+      this._dm.addItem(this._currentDate, title, $priority.value);
+      this._renderToday();
+    };
+
+    $confirm.addEventListener('click', doAdd);
+    $cancel.addEventListener('click', () => { this._addFormVisible = false; this.$addFormContainer.innerHTML = ''; this._renderToday(); });
+    $input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); doAdd(); }
+      else if (e.key === 'Escape') { this._addFormVisible = false; this.$addFormContainer.innerHTML = ''; this._renderToday(); }
+    });
+
+    setTimeout(() => $input.focus(), 100);
+  }
+
+  /* ---------- 日历视图 ---------- */
+  _renderCalendar() {
+    if (this._calendarYear === null || this._calendarMonth === null) return;
+    const year = this._calendarYear;
+    const month = this._calendarMonth;
+    const allDates = this._dm._storage.getAllDates();
+    const todayStr = this._todayStr();
+
+    this.$calendarMonth.textContent = `${year}年 ${month + 1}月`;
+
+    let html = '';
+    const headers = ['日', '一', '二', '三', '四', '五', '六'];
+    headers.forEach(h => { html += `<div class="daily-calendar-day-header">${h}</div>`; });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+
+    // 上个月填充
+    for (let i = firstDay - 1; i >= 0; i--) {
+      html += `<div class="daily-calendar-cell other-month">${prevMonthDays - i}</div>`;
+    }
+
+    // 当月日期
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const hasData = allDates.includes(dateStr);
+      const isToday = dateStr === todayStr;
+      const cellClass = ['daily-calendar-cell'];
+      if (hasData) cellClass.push('has-data');
+      if (isToday) cellClass.push('today');
+      html += `<div class="${cellClass.join(' ')}" data-date="${dateStr}">${day}</div>`;
+    }
+
+    // 下个月填充
+    const totalCells = firstDay + daysInMonth;
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 1; i <= remaining; i++) {
+      html += `<div class="daily-calendar-cell other-month">${i}</div>`;
+    }
+
+    this.$calendarGrid.innerHTML = html;
+
+    // 绑定日期点击事件
+    this.$calendarGrid.querySelectorAll('.has-data').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const dateStr = cell.dataset.date;
+        if (dateStr) this._goToDate(dateStr);
+      });
+    });
+  }
+
+  _navigateMonth(delta) {
+    if (this._calendarMonth === null) return;
+    this._calendarMonth += delta;
+    if (this._calendarMonth < 0) { this._calendarMonth = 11; this._calendarYear--; }
+    else if (this._calendarMonth > 11) { this._calendarMonth = 0; this._calendarYear++; }
+    this._renderCalendar();
+  }
+
+  _goToDate(dateStr) {
+    this._currentDate = dateStr;
+    this._isCalendarView = false;
+    this.$todayView.style.display = '';
+    this.$calendarView.style.display = 'none';
+    this._updateDateDisplay();
+    this._renderToday();
+  }
+
+  _escape(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+}
+
+/* ============================
  * 应用初始化（异步）
  * ============================ */
 (async function init() {
@@ -1882,7 +2807,13 @@ class UIManager {
     const taskManager = new TaskManager(ds);
     await taskManager.init();
     const uiManager = new UIManager(taskManager);
-    window.__app = { ds, taskManager, uiManager };
+
+    // 初始化每日待办模块
+    const dailyStorage = new DailyTodoStorage();
+    const dailyManager = new DailyTodoManager(dailyStorage);
+    const dailyUI = new DailyTodoUI(dailyManager);
+
+    window.__app = { ds, taskManager, uiManager, dailyStorage, dailyManager, dailyUI };
     console.log('✅ 任务管理工具已就绪');
     console.log(`   - 共加载 ${taskManager.tasks.length} 个任务`);
     console.log(`   - 存储模式: ${ds.mode === 'fileSystem' ? '📁 文件系统 (' + ds.dirName + '/tasks.json)' : '💾 localStorage'}`);
