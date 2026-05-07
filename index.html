@@ -1,1599 +1,4069 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f5c518'/><text x='32' y='46' text-anchor='middle' font-size='38' font-family='system-ui,sans-serif' font-weight='700' fill='%23ffffff'>M</text></svg>">
+
 <title>个人任务管理工具</title>
+
 <style>
+
 /* ==================== CSS 变量 & 全局重置 ==================== */
+
 :root {
+
   --bg-page: #fff9e6;
+
   --bg-column: rgba(255,255,255,0.72);
+
   --border-column: #e8e4d9;
+
   --text-primary: #1a1a2e;
+
   --text-secondary: #6b7280;
+
   --text-muted: #9ca3af;
+
   --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.06);
+
   --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+
   --radius-card: 10px;
+
   --radius-tag: 6px;
+
   --radius-column: 14px;
+
   --radius-modal: 16px;
+
   --transition-fast: 0.15s ease;
+
   --transition-normal: 0.25s ease;
+
   --color-high-bg: #fde8e8;
+
   --color-high-text: #c53030;
+
   --color-mid-bg: #fef6e4;
+
   --color-mid-text: #b7791f;
+
   --color-low-bg: #e6f5ea;
+
   --color-low-text: #2f855a;
+
   --color-tag-bg: #eef2f7;
+
   --color-tag-text: #4a5568;
+
   --color-col-todo: #8b9dc3;
+
   --color-col-progress: #7c8ce0;
+
   --color-col-done: #5a9e6f;
+
   --blur-glass: 8px;
+
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
+
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+
     "Microsoft YaHei", "Helvetica Neue", sans-serif;
+
   background: linear-gradient(135deg, #fff9e6 0%, #fefce8 30%, #fdf6e3 100%);
+
   min-height: 100vh;
+
   color: var(--text-primary);
+
   letter-spacing: 0.01em;
+
   user-select: none;
+
 }
 
 /* ==================== 顶部导航栏 ==================== */
+
 .header {
+
   max-width: 1300px;
+
   margin: 0 auto;
+
   padding: 20px 24px 0;
+
 }
 
 .header h1 {
+
   font-size: 22px;
+
   font-weight: 700;
+
   color: var(--text-primary);
+
   margin-bottom: 14px;
+
   letter-spacing: -0.02em;
+
 }
 
 /* 统计看板 */
+
 .stats-bar {
+
   display: flex;
+
   gap: 20px;
+
   flex-wrap: wrap;
+
   margin-bottom: 12px;
+
 }
 
 .stat-item {
+
   background: rgba(255,255,255,0.8);
+
   backdrop-filter: blur(var(--blur-glass));
+
   -webkit-backdrop-filter: blur(var(--blur-glass));
+
   border: 1px solid var(--border-column);
+
   border-radius: 10px;
+
   padding: 8px 16px;
+
   font-size: 13px;
+
   color: var(--text-secondary);
+
   display: flex;
+
   align-items: center;
+
   gap: 6px;
+
 }
 
 .stat-item .stat-num {
+
   font-weight: 700;
+
   font-size: 18px;
+
   color: var(--text-primary);
+
   min-width: 24px;
+
   text-align: center;
+
 }
 
 .stat-item.done .stat-num { color: var(--color-col-done); }
+
 .stat-item.undone .stat-num { color: var(--color-col-progress); }
 
 /* 筛选排序栏 */
+
 .filter-bar {
+
   display: flex;
+
   gap: 10px;
+
   flex-wrap: wrap;
+
   align-items: center;
+
   margin-bottom: 16px;
+
 }
 
 .filter-bar select,
+
 .filter-bar input {
+
   padding: 6px 12px;
+
   border: 1px solid var(--border-column);
+
   border-radius: 8px;
+
   font-size: 13px;
+
   color: var(--text-primary);
+
   background: rgba(255,255,255,0.75);
+
   backdrop-filter: blur(4px);
+
   -webkit-backdrop-filter: blur(4px);
+
   outline: none;
+
   cursor: pointer;
+
   transition: border-color var(--transition-fast);
+
   font-family: inherit;
+
 }
 
 .filter-bar select:focus,
+
 .filter-bar input:focus {
+
   border-color: #7c8ce0;
+
 }
 
 .filter-bar label {
+
   font-size: 12px;
+
   color: var(--text-muted);
+
   display: flex;
+
   align-items: center;
+
   gap: 4px;
+
 }
 
 /* 批量操作栏 */
+
 .batch-bar {
+
   display: none;
+
   align-items: center;
+
   gap: 12px;
+
   margin-bottom: 12px;
+
   padding: 10px 16px;
+
   background: rgba(254,226,226,0.85);
+
   backdrop-filter: blur(6px);
+
   -webkit-backdrop-filter: blur(6px);
+
   border: 1px solid #fca5a5;
+
   border-radius: 10px;
+
 }
 
 .batch-bar.visible { display: flex; }
 
 .batch-bar .batch-count {
+
   font-size: 13px;
+
   color: #991b1b;
+
   font-weight: 500;
+
 }
 
 .btn-batch-delete {
+
   padding: 6px 16px;
+
   background: #dc2626;
+
   color: #fff;
+
   border: none;
+
   border-radius: 7px;
+
   font-size: 13px;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: background var(--transition-fast);
+
 }
 
 .btn-batch-delete:hover { background: #b91c1c; }
 
 .btn-batch-cancel {
+
   padding: 6px 14px;
+
   background: transparent;
+
   color: var(--text-secondary);
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-size: 13px;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
 }
 
 .btn-batch-cancel:hover { background: #f3f4f6; }
 
 /* 数据目录控制 */
+
 .btn-data-dir {
+
   padding: 6px 14px;
+
   background: rgba(255,255,255,0.75);
+
   backdrop-filter: blur(4px);
+
   -webkit-backdrop-filter: blur(4px);
+
   border: 1px solid var(--border-column);
+
   border-radius: 8px;
+
   font-size: 12px;
+
   font-weight: 500;
+
   color: var(--text-secondary);
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
   white-space: nowrap;
+
 }
+
 .btn-data-dir:hover {
+
   background: #fff;
+
   border-color: #7c8ce0;
+
   color: var(--color-col-progress);
+
 }
+
 .data-dir-indicator {
+
   display: inline-flex;
+
   align-items: center;
+
   gap: 4px;
+
   font-size: 11px;
+
   color: var(--text-muted);
+
   padding: 4px 10px;
+
   background: rgba(255,255,255,0.6);
+
   border: 1px dashed var(--border-column);
+
   border-radius: 6px;
+
   max-width: 280px;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
   white-space: nowrap;
+
 }
+
 .data-dir-indicator.file-mode {
+
   color: #2f855a;
+
   border-color: #5a9e6f;
+
   background: rgba(230,245,234,0.6);
+
 }
 
 /* ==================== 看板三列布局 ==================== */
+
 .board {
+
   max-width: 1300px;
+
   margin: 0 auto;
+
   padding: 0 24px 40px;
+
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: 18px;
+
   align-items: start;
+
 }
 
 .column {
+
   background: rgba(255,255,255,0.65);
+
   backdrop-filter: blur(var(--blur-glass));
+
   -webkit-backdrop-filter: blur(var(--blur-glass));
+
   border: 1px solid var(--border-column);
+
   border-radius: var(--radius-column);
+
   padding: 14px;
+
   display: flex;
+
   flex-direction: column;
+
   transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+
 }
 
 .column.drag-over {
+
   box-shadow: 0 0 0 2px rgba(124,140,224,0.35), 0 4px 20px rgba(124,140,224,0.12);
+
   border-color: #bcc4f0;
+
 }
 
 .column::before {
+
   content: '';
+
   display: block;
+
   height: 3px;
+
   border-radius: 0 0 3px 3px;
+
   margin: -14px -14px 12px -14px;
+
 }
 
 .column.col-todo::before { background: var(--color-col-todo); }
+
 .column.col-progress::before { background: var(--color-col-progress); }
+
 .column.col-done::before { background: var(--color-col-done); }
 
 .column-header {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   margin-bottom: 8px;
+
 }
 
 .column-header .col-title {
+
   font-size: 14px;
+
   font-weight: 600;
+
   color: var(--text-primary);
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
 }
 
 .column-header .col-count {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   min-width: 22px;
+
   height: 22px;
+
   padding: 0 6px;
+
   background: rgba(0,0,0,0.06);
+
   border-radius: 11px;
+
   font-size: 11px;
+
   font-weight: 600;
+
   color: var(--text-secondary);
+
 }
 
 .btn-add-task {
+
   width: 28px;
+
   height: 28px;
+
   border-radius: 7px;
+
   border: 1px solid var(--border-column);
+
   background: rgba(255,255,255,0.8);
+
   color: var(--text-secondary);
+
   font-size: 18px;
+
   line-height: 1;
+
   cursor: pointer;
+
   transition: all var(--transition-fast);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 0;
+
 }
 
 .btn-add-task:hover {
+
   background: #fff;
+
   border-color: #bcc4f0;
+
   color: var(--color-col-progress);
+
   box-shadow: var(--shadow-card);
+
 }
 
 .card-list {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 10px;
+
   flex: 1;
+
   min-height: 60px;
+
 }
 
 /* ==================== 任务卡片 ==================== */
+
 .task-card {
+
   background: rgba(255,255,255,0.9);
+
   backdrop-filter: blur(4px);
+
   -webkit-backdrop-filter: blur(4px);
+
   border: 1px solid rgba(0,0,0,0.06);
+
   border-radius: var(--radius-card);
+
   padding: 16px 18px;
+
   cursor: grab;
+
   position: relative;
+
   box-shadow: var(--shadow-card);
+
   transition: box-shadow var(--transition-normal), transform var(--transition-fast),
+
     border-color var(--transition-normal);
+
   animation: cardIn 0.25s ease;
+
 }
 
 @keyframes cardIn {
+
   from { opacity: 0; transform: translateY(8px); }
+
   to { opacity: 1; transform: translateY(0); }
+
 }
 
 .task-card:hover {
+
   box-shadow: var(--shadow-card-hover);
+
   border-color: rgba(0,0,0,0.1);
+
 }
 
 .task-card:active { cursor: grabbing; }
 
 .task-card.dragging {
+
   opacity: 0.5;
+
   transform: scale(0.96);
+
 }
 
 .task-card .card-checkbox {
+
   position: absolute;
+
   top: 10px;
+
   left: 10px;
+
   width: 16px;
+
   height: 16px;
+
   cursor: pointer;
+
   accent-color: #dc2626;
+
   opacity: 0;
+
   transition: opacity var(--transition-fast);
+
   z-index: 1;
+
 }
 
 .task-card:hover .card-checkbox,
+
 .task-card .card-checkbox:checked {
+
   opacity: 1;
+
 }
 
 .task-card .card-title {
+
   font-size: 14px;
+
   font-weight: 600;
+
   color: var(--text-primary);
+
   margin-bottom: 6px;
+
   line-height: 1.4;
+
   padding-left: 0;
+
   transition: padding-left var(--transition-fast);
+
 }
 
 .task-card .card-desc {
+
   font-size: 12px;
+
   color: var(--text-secondary);
+
   margin-bottom: 6px;
+
   line-height: 1.5;
+
   display: -webkit-box;
+
   -webkit-line-clamp: 3;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
 }
 
 .task-card .card-progress-preview {
+
   font-size: 11px;
+
   color: var(--text-muted);
+
   margin-top: 8px;
+
   margin-bottom: 2px;
+
   line-height: 1.5;
+
   display: -webkit-box;
+
   -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
+
   overflow: hidden;
+
   padding-left: 6px;
+
   border-left: 2px solid var(--color-col-progress);
+
 }
+
 .task-card .card-progress-preview .progress-label {
+
   font-weight: 500;
+
   color: #7c8ce0;
+
   margin-right: 2px;
+
 }
 
 .task-card .card-meta {
+
   display: flex;
+
   align-items: center;
+
   gap: 6px;
+
   flex-wrap: wrap;
+
 }
 
 .task-card .card-meta .due-date {
+
   font-size: 11px;
+
   color: var(--text-muted);
+
   display: flex;
+
   align-items: center;
+
   gap: 3px;
+
 }
 
 .task-card .card-meta .due-date.overdue {
+
   color: #dc2626;
+
   font-weight: 500;
+
 }
 
 .priority-tag {
+
   display: inline-flex;
+
   align-items: center;
+
   gap: 3px;
+
   padding: 2px 8px;
+
   border-radius: var(--radius-tag);
+
   font-size: 12px;
+
   font-weight: 500;
+
   white-space: nowrap;
+
 }
 
 .priority-tag.high { background: var(--color-high-bg); color: var(--color-high-text); }
+
 .priority-tag.medium { background: var(--color-mid-bg); color: var(--color-mid-text); }
+
 .priority-tag.low { background: var(--color-low-bg); color: var(--color-low-text); }
 
 .category-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .category-tag {
+
   display: inline-block;
+
   padding: 1px 7px;
+
   border-radius: 4px;
+
   background: var(--color-tag-bg);
+
   color: var(--color-tag-text);
+
   font-size: 11px;
+
   font-weight: 500;
+
   white-space: nowrap;
+
 }
 
 /* ==================== 右键菜单 ==================== */
+
 .context-menu {
+
   position: fixed;
+
   z-index: 1000;
+
   background: rgba(255,255,255,0.96);
+
   backdrop-filter: blur(12px);
+
   -webkit-backdrop-filter: blur(12px);
+
   border: 1px solid var(--border-column);
+
   border-radius: 10px;
+
   padding: 4px 0;
+
   min-width: 150px;
+
   box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+
   opacity: 0;
+
   transform: scale(0.92);
+
   pointer-events: none;
+
   transition: opacity 0.12s ease, transform 0.12s ease;
+
 }
 
 .context-menu.show {
+
   opacity: 1;
+
   transform: scale(1);
+
   pointer-events: auto;
+
 }
 
 .context-menu .menu-item {
+
   display: block;
+
   width: 100%;
+
   padding: 8px 16px;
+
   border: none;
+
   background: transparent;
+
   font-size: 13px;
+
   color: var(--text-primary);
+
   cursor: pointer;
+
   text-align: left;
+
   font-family: inherit;
+
   transition: background var(--transition-fast);
+
 }
 
 .context-menu .menu-item:hover { background: #f3f4f6; }
+
 .context-menu .menu-item.danger { color: #dc2626; }
+
 .context-menu .menu-item.danger:hover { background: #fef2f2; }
 
 .context-menu .menu-divider {
+
   height: 1px;
+
   background: var(--border-column);
+
   margin: 3px 8px;
+
 }
 
 /* ==================== Modal ==================== */
+
 .modal-overlay {
+
   position: fixed;
+
   inset: 0;
+
   z-index: 900;
+
   background: rgba(0,0,0,0.3);
+
   backdrop-filter: blur(2px);
+
   -webkit-backdrop-filter: blur(2px);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   animation: fadeIn 0.2s ease;
+
 }
 
 @keyframes fadeIn {
+
   from { opacity: 0; }
+
   to { opacity: 1; }
+
 }
 
 .modal {
+
   background: #fff;
+
   border-radius: var(--radius-modal);
+
   padding: 24px 28px;
+
   width: 480px;
+
   max-width: 94vw;
+
   max-height: 85vh;
+
   overflow-y: auto;
+
   box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+
   animation: modalIn 0.25s ease;
+
 }
 
 @keyframes modalIn {
+
   from { opacity: 0; transform: translateY(20px) scale(0.96); }
+
   to { opacity: 1; transform: translateY(0) scale(1); }
+
 }
 
 .modal h2 {
+
   font-size: 18px;
+
   font-weight: 700;
+
   margin-bottom: 18px;
+
   color: var(--text-primary);
+
 }
 
 .modal .form-group { margin-bottom: 14px; }
 
 .modal .form-group label {
+
   display: block;
+
   font-size: 12px;
+
   font-weight: 600;
+
   color: var(--text-secondary);
+
   margin-bottom: 5px;
+
   text-transform: uppercase;
+
   letter-spacing: 0.04em;
+
 }
 
 .modal .form-group input,
+
 .modal .form-group textarea,
+
 .modal .form-group select {
+
   width: 100%;
+
   padding: 8px 12px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 8px;
+
   font-size: 14px;
+
   font-family: inherit;
+
   color: var(--text-primary);
+
   outline: none;
+
   transition: border-color var(--transition-fast);
+
 }
 
 .modal .form-group input:focus,
+
 .modal .form-group textarea:focus,
+
 .modal .form-group select:focus {
+
   border-color: #7c8ce0;
+
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+
 }
 
 .modal .form-group textarea { resize: vertical; min-height: 80px; }
 
 .tag-input-wrapper {
+
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 6px;
+
   align-items: center;
+
   padding: 6px 8px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 8px;
+
   min-height: 38px;
+
   background: #fff;
+
   transition: border-color var(--transition-fast);
+
 }
 
 .tag-input-wrapper:focus-within {
+
   border-color: #7c8ce0;
+
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+
 }
 
 .tag-input-wrapper .tag-chip {
+
   display: inline-flex;
+
   align-items: center;
+
   gap: 4px;
+
   padding: 2px 8px;
+
   background: var(--color-tag-bg);
+
   color: var(--color-tag-text);
+
   border-radius: 4px;
+
   font-size: 12px;
+
   font-weight: 500;
+
 }
 
 .tag-input-wrapper .tag-chip .tag-remove {
+
   cursor: pointer;
+
   font-size: 14px;
+
   line-height: 1;
+
   color: #9ca3af;
+
   transition: color var(--transition-fast);
+
 }
 
 .tag-input-wrapper .tag-chip .tag-remove:hover { color: #dc2626; }
 
 .tag-input-wrapper input.tag-input {
+
   border: none;
+
   outline: none;
+
   flex: 1;
+
   min-width: 80px;
+
   font-size: 13px;
+
   padding: 2px 4px;
+
   font-family: inherit;
+
   background: transparent;
+
   box-shadow: none;
+
 }
 
 .modal .form-actions {
+
   display: flex;
+
   gap: 10px;
+
   justify-content: flex-end;
+
   margin-top: 20px;
+
 }
 
 .btn-primary {
+
   padding: 8px 20px;
+
   background: #4f6ef7;
+
   color: #fff;
+
   border: none;
+
   border-radius: 8px;
+
   font-size: 14px;
+
   font-weight: 500;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: background var(--transition-fast);
+
 }
 
 .btn-primary:hover { background: #3b54d4; }
 
 .btn-secondary {
+
   padding: 8px 20px;
+
   background: #f3f4f6;
+
   color: var(--text-primary);
+
   border: 1px solid #d1d5db;
+
   border-radius: 8px;
+
   font-size: 14px;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: background var(--transition-fast);
+
 }
 
 .btn-secondary:hover { background: #e5e7eb; }
 
 /* ==================== 每日待办按钮 ==================== */
+
 .btn-daily-todo {
+
   padding: 8px 18px;
+
   background: linear-gradient(135deg, #fef6e4 0%, #fff9e6 100%);
+
   border: 1px solid #f5c518;
+
   border-radius: 10px;
+
   font-size: 13px;
+
   font-weight: 600;
+
   color: #b7791f;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
   white-space: nowrap;
+
   box-shadow: 0 1px 3px rgba(245,197,24,0.15);
+
 }
+
 .btn-daily-todo:hover {
+
   background: linear-gradient(135deg, #f5c518 0%, #fbbf24 100%);
+
   color: #fff;
+
   box-shadow: 0 2px 8px rgba(245,197,24,0.3);
+
   transform: translateY(-1px);
+
 }
 
 /* ==================== 每日待办侧边栏 ==================== */
+
 .daily-overlay {
+
   position: fixed;
+
   inset: 0;
+
   z-index: 800;
+
   background: rgba(0,0,0,0.35);
+
   backdrop-filter: blur(2px);
+
   -webkit-backdrop-filter: blur(2px);
+
   opacity: 0;
+
   pointer-events: none;
+
   transition: opacity 0.3s ease;
+
 }
+
 .daily-overlay.show {
+
   opacity: 1;
+
   pointer-events: auto;
+
 }
 
 .daily-sidebar {
+
   position: fixed;
+
   top: 0;
+
   right: -360px;
+
   width: 360px;
+
   max-width: 92vw;
+
   height: 100vh;
+
   z-index: 810;
+
   background: #fffdf7;
+
   box-shadow: -4px 0 24px rgba(0,0,0,0.1), -1px 0 4px rgba(0,0,0,0.04);
+
   display: flex;
+
   flex-direction: column;
+
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   overflow: hidden;
+
 }
+
 .daily-sidebar.open { transform: translateX(-360px); }
 
 .daily-sidebar-header {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   padding: 18px 20px 14px;
+
   border-bottom: 1px solid #f0e8d0;
+
   flex-shrink: 0;
+
 }
+
 .daily-sidebar-header h2 {
+
   font-size: 17px;
+
   font-weight: 700;
+
   color: var(--text-primary);
+
   margin: 0;
+
 }
+
 .daily-sidebar-close {
+
   width: 32px;
+
   height: 32px;
+
   border-radius: 8px;
+
   border: 1px solid #e5e7eb;
+
   background: #fff;
+
   color: var(--text-secondary);
+
   font-size: 16px;
+
   cursor: pointer;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   transition: all var(--transition-fast);
+
   font-family: inherit;
+
 }
+
 .daily-sidebar-close:hover { background: #f3f4f6; color: var(--text-primary); }
 
 .daily-date-bar {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   padding: 14px 20px;
+
   border-bottom: 1px solid #f3f4f6;
+
   flex-shrink: 0;
+
 }
+
 .daily-date-label {
+
   font-size: 15px;
+
   font-weight: 700;
+
   color: var(--text-primary);
+
   display: flex;
+
   align-items: center;
+
   gap: 6px;
+
 }
+
 .daily-date-label small {
+
   font-weight: 400;
+
   font-size: 12px;
+
   color: var(--text-muted);
+
 }
+
 .btn-daily-calendar {
+
   padding: 5px 12px;
+
   background: transparent;
+
   border: 1px solid #e5e7eb;
+
   border-radius: 7px;
+
   font-size: 12px;
+
   color: var(--text-secondary);
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
   white-space: nowrap;
+
 }
+
 .btn-daily-calendar:hover { background: #f9fafb; border-color: #d1d5db; }
 
 /* 侧边栏主体内容区 */
+
 .daily-body {
+
   flex: 1;
+
   overflow-y: auto;
+
   padding: 16px 20px;
+
 }
 
 /* 空状态 */
+
 .daily-empty {
+
   text-align: center;
+
   padding: 40px 10px;
+
   color: var(--text-muted);
+
   font-size: 13px;
+
   line-height: 1.8;
+
 }
+
 .daily-empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
 
 .btn-daily-create {
+
   display: block;
+
   width: 100%;
+
   padding: 10px 16px;
+
   margin-top: 16px;
+
   background: #4f6ef7;
+
   color: #fff;
+
   border: none;
+
   border-radius: 10px;
+
   font-size: 14px;
+
   font-weight: 600;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: background var(--transition-fast);
+
 }
+
 .btn-daily-create:hover { background: #3b54d4; }
 
 /* 每日待办卡片 */
+
 .daily-item-list {
+
   list-style: none;
+
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
+
   margin-top: 8px;
+
 }
 
 .daily-item-card {
+
   display: flex;
+
   align-items: center;
+
   gap: 10px;
+
   background: #fff;
+
   border: 1px solid rgba(0,0,0,0.06);
+
   border-radius: 9px;
+
   padding: 10px 12px;
+
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+
   transition: all var(--transition-fast);
+
   animation: cardIn 0.2s ease;
+
 }
+
 .daily-item-card:hover { box-shadow: var(--shadow-card-hover); border-color: rgba(0,0,0,0.1); }
+
 .daily-item-card.completed { opacity: 0.6; background: #f9fafb; }
+
 .daily-item-card.completed .daily-item-title { text-decoration: line-through; color: var(--text-muted); }
 
 .daily-item-check {
+
   width: 18px;
+
   height: 18px;
+
   border-radius: 50%;
+
   border: 2px solid #d1d5db;
+
   flex-shrink: 0;
+
   cursor: pointer;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   transition: all var(--transition-fast);
+
   accent-color: #4f6ef7;
+
 }
+
 .daily-item-check:checked { border-color: #4f6ef7; background: #4f6ef7; }
 
 .daily-item-content {
+
   flex: 1;
+
   min-width: 0;
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
 }
+
 .daily-item-title {
+
   font-size: 13px;
+
   font-weight: 500;
+
   color: var(--text-primary);
+
   line-height: 1.4;
+
   word-break: break-word;
+
   flex: 1;
+
 }
+
 .daily-item-priority {
+
   flex-shrink: 0;
+
   font-size: 14px;
+
   line-height: 1;
+
 }
 
 .daily-item-delete {
+
   width: 26px;
+
   height: 26px;
+
   border-radius: 6px;
+
   border: 1px solid transparent;
+
   background: transparent;
+
   color: #d1d5db;
+
   cursor: pointer;
+
   font-size: 14px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex-shrink: 0;
+
   transition: all var(--transition-fast);
+
   font-family: inherit;
+
   opacity: 0;
+
 }
+
 .daily-item-card:hover .daily-item-delete { opacity: 1; }
+
 .daily-item-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
 /* 内联编辑 */
+
 .daily-item-edit-input {
+
   flex: 1;
+
   padding: 4px 8px;
+
   border: 1px solid #7c8ce0;
+
   border-radius: 6px;
+
   font-size: 13px;
+
   font-family: inherit;
+
   color: var(--text-primary);
+
   outline: none;
+
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+
 }
 
 /* 新增待办表单 */
+
 .daily-add-form {
+
   display: flex;
+
+  flex-wrap: wrap;
+
   gap: 8px;
+
   align-items: center;
+
   margin-top: 4px;
+
   padding: 8px 0;
+
 }
+
 .daily-add-form input {
+
   flex: 1;
+
   padding: 7px 10px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-size: 13px;
+
   font-family: inherit;
+
   color: var(--text-primary);
+
   outline: none;
+
   transition: border-color var(--transition-fast);
+
 }
+
 .daily-add-form input:focus {
+
   border-color: #7c8ce0;
+
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+
 }
+
 .daily-add-form select {
+
   padding: 7px 8px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-size: 12px;
+
   font-family: inherit;
+
   color: var(--text-primary);
+
   background: #fff;
+
   outline: none;
+
 }
+
 .daily-add-form .btn-confirm {
+
   padding: 7px 14px;
+
   background: #4f6ef7;
+
   color: #fff;
+
   border: none;
+
   border-radius: 7px;
+
   font-size: 12px;
+
   font-weight: 600;
+
   cursor: pointer;
+
   font-family: inherit;
+
   white-space: nowrap;
+
   transition: background var(--transition-fast);
+
 }
+
 .daily-add-form .btn-confirm:hover { background: #3b54d4; }
+
 .daily-add-form .btn-cancel {
+
   padding: 7px 12px;
+
   background: #f3f4f6;
+
   color: var(--text-secondary);
+
   border: 1px solid #d1d5db;
+
   border-radius: 7px;
+
   font-size: 12px;
+
   cursor: pointer;
+
   font-family: inherit;
+
   white-space: nowrap;
+
 }
+
 .daily-add-form .btn-cancel:hover { background: #e5e7eb; }
 
 /* "新增待办"按钮 */
+
 .btn-daily-add-item {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 6px;
+
   width: 100%;
+
   padding: 10px 16px;
+
   margin-top: 12px;
+
   background: #f9fafb;
+
   border: 2px dashed #e5e7eb;
+
   border-radius: 9px;
+
   font-size: 13px;
+
   color: var(--text-muted);
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
 }
+
 .btn-daily-add-item:hover {
+
   background: #f3f4f6;
+
   border-color: #bcc4f0;
+
   color: #4f6ef7;
+
 }
 
 /* 日历视图 */
+
 .daily-calendar-header {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   margin-bottom: 12px;
+
 }
+
 .daily-calendar-month {
+
   font-size: 14px;
+
   font-weight: 700;
+
   color: var(--text-primary);
+
 }
+
 .daily-calendar-nav {
+
   width: 28px;
+
   height: 28px;
+
   border-radius: 7px;
+
   border: 1px solid #e5e7eb;
+
   background: #fff;
+
   cursor: pointer;
+
   font-size: 14px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   color: var(--text-secondary);
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
 }
+
 .daily-calendar-nav:hover { background: #f3f4f6; }
 
 .daily-calendar-grid {
+
   display: grid;
+
   grid-template-columns: repeat(7, 1fr);
+
   gap: 4px;
+
   text-align: center;
+
 }
+
 .daily-calendar-day-header {
+
   font-size: 11px;
+
   color: var(--text-muted);
+
   font-weight: 600;
+
   padding: 6px 0;
+
 }
+
 .daily-calendar-cell {
+
   aspect-ratio: 1;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   border-radius: 8px;
+
   font-size: 13px;
+
   font-weight: 500;
+
   cursor: default;
+
   color: #d1d5db;
+
   transition: all var(--transition-fast);
+
 }
+
 .daily-calendar-cell.other-month { color: #e5e7eb; }
+
 .daily-calendar-cell.has-data {
+
   cursor: pointer;
+
   color: var(--text-primary);
+
   background: #eef2ff;
+
   font-weight: 600;
+
 }
+
 .daily-calendar-cell.has-data:hover { background: #dbe4ff; color: #4f6ef7; }
+
 .daily-calendar-cell.today {
+
   box-shadow: 0 0 0 2px #4f6ef7;
+
   color: #4f6ef7;
+
   font-weight: 700;
+
 }
+
 .daily-calendar-cell.has-data.today { background: #eef2ff; }
 
 .btn-back-today {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 6px;
+
   width: 100%;
+
   padding: 8px 16px;
+
   margin-top: 14px;
+
   background: #eef2ff;
+
   border: 1px solid #bcc4f0;
+
   border-radius: 8px;
+
   font-size: 13px;
+
   font-weight: 500;
+
   color: #4f6ef7;
+
   cursor: pointer;
+
   font-family: inherit;
+
   transition: all var(--transition-fast);
+
 }
+
 .btn-back-today:hover { background: #dbe4ff; }
 
 /* ==================== 响应式 ==================== */
+
 @media (max-width: 900px) {
+
   .board { grid-template-columns: 1fr; gap: 14px; }
+
 }
 
 @media (min-width: 901px) and (max-width: 1100px) {
+
   .board { gap: 12px; }
+
   .task-card { padding: 10px 12px; }
+
 }
 
 /* ==================== 滚动条美化 ==================== */
+
 ::-webkit-scrollbar { width: 6px; }
+
 ::-webkit-scrollbar-track { background: transparent; }
+
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 /* ==================== Toast ==================== */
+
 .toast {
+
   position: fixed;
+
   bottom: 30px;
+
   left: 50%;
+
   transform: translateX(-50%);
+
   z-index: 2000;
+
   background: #1a1a2e;
+
   color: #fff;
+
   padding: 10px 22px;
+
   border-radius: 10px;
+
   font-size: 13px;
+
   font-weight: 500;
+
   pointer-events: none;
+
   animation: toastIn 0.3s ease, toastOut 0.3s ease 1.7s forwards;
+
   white-space: nowrap;
+
 }
 
 @keyframes toastIn {
+
   from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 }
 
 @keyframes toastOut {
+
   from { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   to { opacity: 0; transform: translateX(-50%) translateY(12px); }
+
 }
 
 /* ==================== 进展记录相关 ==================== */
+
 .progress-section {
+
   margin-top: 6px;
+
   border: 1px solid #e5e7eb;
+
   border-radius: 8px;
+
   overflow: hidden;
+
 }
 
 .progress-section-toggle {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   width: 100%;
+
   padding: 10px 14px;
+
   background: #f9fafb;
+
   border: none;
+
   cursor: pointer;
+
   font-family: inherit;
+
   font-size: 13px;
+
   font-weight: 600;
+
   color: var(--text-primary);
+
   transition: background var(--transition-fast);
+
 }
+
 .progress-section-toggle:hover { background: #f3f4f6; }
+
 .progress-section-toggle .toggle-icon {
+
   font-size: 11px;
+
   color: var(--text-muted);
+
   transition: transform var(--transition-fast);
+
 }
+
 .progress-section-toggle.expanded .toggle-icon { transform: rotate(180deg); }
 
 .progress-section-body { display: none; padding: 10px 14px 14px; background: #fff; }
+
 .progress-section-body.show { display: block; }
 
 .progress-history { max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
 
 .progress-item {
+
   display: flex;
+
   align-items: flex-start;
+
   gap: 10px;
+
   padding: 10px 0;
+
   border-bottom: 1px solid #f3f4f6;
+
   position: relative;
+
   transition: background var(--transition-fast);
+
 }
+
 .progress-item:last-child { border-bottom: none; }
+
 .progress-item:hover .progress-delete { opacity: 1; }
 
 .progress-avatar {
+
   width: 28px;
+
   height: 28px;
+
   border-radius: 50%;
+
   background: #eef2ff;
+
   color: #4f6ef7;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   font-size: 13px;
+
   flex-shrink: 0;
+
   font-weight: 600;
+
 }
 
 .progress-content { flex: 1; min-width: 0; }
+
 .progress-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; word-break: break-word; }
+
 .progress-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
 .progress-delete {
+
   opacity: 0;
+
   width: 22px;
+
   height: 22px;
+
   border-radius: 5px;
+
   border: 1px solid #e5e7eb;
+
   background: #fff;
+
   color: #9ca3af;
+
   cursor: pointer;
+
   font-size: 14px;
+
   line-height: 1;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex-shrink: 0;
+
   transition: all var(--transition-fast);
+
 }
+
 .progress-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
 .progress-empty { text-align: center; padding: 24px 0; color: var(--text-muted); font-size: 13px; }
 
 .progress-add-bar { display: flex; gap: 8px; align-items: flex-end; }
+
 .progress-add-bar textarea {
+
   flex: 1;
+
   min-height: 36px;
+
   max-height: 120px;
+
   padding: 8px 12px;
+
   border: 1px solid #d1d5db;
+
   border-radius: 8px;
+
   font-size: 13px;
+
   font-family: inherit;
+
   color: var(--text-primary);
+
   outline: none;
+
   resize: none;
+
   transition: border-color var(--transition-fast);
+
 }
+
 .progress-add-bar textarea:focus {
+
   border-color: #7c8ce0;
+
   box-shadow: 0 0 0 3px rgba(124,140,224,0.1);
+
 }
+
 .btn-progress-add {
+
   padding: 7px 16px;
+
   background: #4f6ef7;
+
   color: #fff;
+
   border: none;
+
   border-radius: 8px;
+
   font-size: 13px;
+
   font-weight: 500;
+
   cursor: pointer;
+
   font-family: inherit;
+
   white-space: nowrap;
+
   transition: background var(--transition-fast);
+
   flex-shrink: 0;
+
 }
+
 .btn-progress-add:hover { background: #3b54d4; }
+
+/* ==================== 左侧工具栏 ==================== */
+
+body { padding-left: 48px; transition: padding-left 0.3s ease; }
+
+body.left-sidebar-expanded { padding-left: 280px; }
+
+.left-sidebar {
+
+  position: fixed;
+
+  left: 0; top: 0;
+
+  width: 48px;
+
+  height: 100vh;
+
+  background: rgba(255,255,255,0.92);
+
+  backdrop-filter: blur(12px);
+
+  -webkit-backdrop-filter: blur(12px);
+
+  border-right: 1px solid var(--border-column);
+
+  z-index: 700;
+
+  display: flex;
+
+  flex-direction: column;
+
+  transition: width 0.3s ease;
+
+  overflow: hidden;
+
+  box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+
+}
+
+.left-sidebar.expanded { width: 280px; }
+
+.sidebar-icons {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  padding: 12px 0;
+
+  gap: 4px;
+
+  flex-shrink: 0;
+
+}
+
+.sidebar-icon-btn {
+
+  position: relative;
+
+  width: 40px; height: 40px;
+
+  border-radius: 10px;
+
+  border: 1px solid transparent;
+
+  background: transparent;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  transition: all var(--transition-fast);
+
+  flex-shrink: 0;
+
+  font-family: inherit;
+
+}
+
+.sidebar-icon-btn:hover {
+
+  background: #f3f4f6;
+
+  border-color: var(--border-column);
+
+}
+
+.sidebar-icon-btn.active {
+
+  background: #eef2ff;
+
+  border-color: #bcc4f0;
+
+  color: #4f6ef7;
+
+}
+
+.sidebar-icon-btn .tooltip {
+
+  position: absolute;
+
+  left: 52px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  background: #1a1a2e;
+
+  color: #fff;
+
+  padding: 4px 10px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+
+  white-space: nowrap;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition: opacity 0.15s ease;
+
+  z-index: 710;
+
+}
+
+.left-sidebar.expanded .sidebar-icon-btn .tooltip { display: none; }
+
+.sidebar-icon-btn:hover .tooltip { opacity: 1; }
+
+.sidebar-panel-area {
+
+  flex: 1;
+
+  overflow-y: auto;
+
+  overflow-x: hidden;
+
+  padding: 0 14px 14px;
+
+  display: none;
+
+}
+
+.left-sidebar.expanded .sidebar-panel-area { display: block; }
+
+.sidebar-panel-title {
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color: var(--text-primary);
+
+  padding: 12px 0 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+}
+
+/* ---- 计时器 ---- */
+
+.timer-mode-switch {
+
+  display: flex;
+
+  gap: 4px;
+
+  background: #f3f4f6;
+
+  border-radius: 8px;
+
+  padding: 3px;
+
+  margin-bottom: 12px;
+
+}
+
+.timer-mode-btn {
+
+  flex: 1;
+
+  padding: 6px 0;
+
+  border: none;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  background: transparent;
+
+  color: var(--text-secondary);
+
+  font-family: inherit;
+
+  transition: all var(--transition-fast);
+
+}
+
+.timer-mode-btn.active {
+
+  background: #fff;
+
+  color: var(--text-primary);
+
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+}
+
+.timer-display {
+
+  text-align: center;
+
+  font-size: 36px;
+
+  font-weight: 700;
+
+  color: var(--text-primary);
+
+  font-variant-numeric: tabular-nums;
+
+  letter-spacing: 2px;
+
+  padding: 16px 0;
+
+}
+
+.timer-inputs {
+
+  display: flex;
+
+  gap: 6px;
+
+  justify-content: center;
+
+  margin-bottom: 12px;
+
+}
+
+.timer-inputs input {
+
+  width: 54px;
+
+  text-align: center;
+
+  padding: 6px 4px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 7px;
+
+  font-size: 14px;
+
+  font-family: inherit;
+
+  color: var(--text-primary);
+
+  outline: none;
+
+  transition: border-color var(--transition-fast);
+
+}
+
+.timer-inputs input:focus { border-color: #7c8ce0; }
+
+.timer-inputs span { line-height: 32px; color: var(--text-muted); font-size: 14px; }
+
+.timer-controls {
+
+  display: flex;
+
+  gap: 8px;
+
+  justify-content: center;
+
+}
+
+.timer-ctrl-btn {
+
+  padding: 8px 18px;
+
+  border-radius: 8px;
+
+  border: 1px solid #d1d5db;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  font-family: inherit;
+
+  transition: all var(--transition-fast);
+
+}
+
+.timer-ctrl-btn.start { background: #4f6ef7; color: #fff; border-color: #4f6ef7; }
+
+.timer-ctrl-btn.start:hover { background: #3b54d4; }
+
+.timer-ctrl-btn.pause { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+
+.timer-ctrl-btn.pause:hover { background: #d97706; }
+
+.timer-ctrl-btn.reset { background: #f3f4f6; color: var(--text-primary); }
+
+.timer-ctrl-btn.reset:hover { background: #e5e7eb; }
+
+/* ---- 倒数日 ---- */
+
+.countdown-add-bar {
+
+  display: flex;
+
+  gap: 6px;
+
+  margin-bottom: 12px;
+
+}
+
+.countdown-add-bar input {
+
+  flex: 1;
+
+  padding: 6px 8px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  font-family: inherit;
+
+  color: var(--text-primary);
+
+  outline: none;
+
+  min-width: 0;
+
+}
+
+.countdown-add-bar input:focus { border-color: #7c8ce0; }
+
+.countdown-add-bar .btn-countdown-add {
+
+  padding: 6px 12px;
+
+  background: #4f6ef7;
+
+  color: #fff;
+
+  border: none;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  font-family: inherit;
+
+  white-space: nowrap;
+
+  flex-shrink: 0;
+
+}
+
+.countdown-add-bar .btn-countdown-add:hover { background: #3b54d4; }
+
+.countdown-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+}
+
+.countdown-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 8px 10px;
+
+  background: #fff;
+
+  border: 1px solid rgba(0,0,0,0.06);
+
+  border-radius: 8px;
+
+  font-size: 12px;
+
+  transition: all var(--transition-fast);
+
+}
+
+.countdown-item:hover { box-shadow: var(--shadow-card); }
+
+.countdown-item .cd-name { flex: 1; color: var(--text-primary); font-weight: 500; word-break: break-all; }
+
+.countdown-item .cd-days {
+
+  font-weight: 700;
+
+  font-size: 14px;
+
+  color: #4f6ef7;
+
+  flex-shrink: 0;
+
+}
+
+.countdown-item .cd-days.past { color: var(--text-muted); }
+
+.countdown-item .cd-date { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+.countdown-item .cd-delete {
+
+  width: 20px; height: 20px;
+
+  border-radius: 4px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #d1d5db;
+
+  cursor: pointer;
+
+  font-size: 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  opacity: 0;
+
+  transition: all var(--transition-fast);
+
+}
+
+.countdown-item:hover .cd-delete { opacity: 1; }
+
+.countdown-item .cd-delete:hover { color: #dc2626; background: #fef2f2; }
+
+.countdown-section-label {
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  color: var(--text-muted);
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.04em;
+
+  margin: 10px 0 6px;
+
+}
+
+/* ---- 计算器 ---- */
+
+.calc-tabs {
+
+  display: flex;
+
+  gap: 2px;
+
+  background: #f3f4f6;
+
+  border-radius: 8px;
+
+  padding: 3px;
+
+  margin-bottom: 10px;
+
+}
+
+.calc-tab {
+
+  flex: 1;
+
+  padding: 5px 0;
+
+  border: none;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  background: transparent;
+
+  color: var(--text-secondary);
+
+  font-family: inherit;
+
+  transition: all var(--transition-fast);
+
+  white-space: nowrap;
+
+}
+
+.calc-tab.active { background: #fff; color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.calc-display {
+
+  background: #1a1a2e;
+
+  color: #fff;
+
+  border-radius: 10px;
+
+  padding: 12px;
+
+  margin-bottom: 8px;
+
+  text-align: right;
+
+  min-height: 56px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: flex-end;
+
+}
+
+.calc-display .calc-expr { font-size: 12px; color: #9ca3af; margin-bottom: 4px; word-break: break-all; min-height: 16px; }
+
+.calc-display .calc-result { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.calc-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 4px;
+
+}
+
+.calc-btn {
+
+  padding: 10px 0;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 8px;
+
+  background: #fff;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  font-family: inherit;
+
+  color: var(--text-primary);
+
+  transition: all var(--transition-fast);
+
+}
+
+.calc-btn:hover { background: #f3f4f6; }
+
+.calc-btn:active { background: #e5e7eb; }
+
+.calc-btn.op { color: #4f6ef7; }
+
+.calc-btn.eq { background: #4f6ef7; color: #fff; border-color: #4f6ef7; }
+
+.calc-btn.eq:hover { background: #3b54d4; }
+
+.calc-panel { display: none; }
+
+.calc-panel.active { display: block; }
+
+/* 汇率 */
+
+.fx-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+
+.fx-row select, .fx-row input {
+
+  padding: 6px 8px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  font-family: inherit;
+
+  color: var(--text-primary);
+
+  outline: none;
+
+  background: #fff;
+
+}
+
+.fx-row select { flex: 0 0 auto; }
+
+.fx-row input { flex: 1; min-width: 0; }
+
+.fx-swap-btn {
+
+  width: 28px; height: 28px;
+
+  border-radius: 50%;
+
+  border: 1px solid #e5e7eb;
+
+  background: #fff;
+
+  cursor: pointer;
+
+  font-size: 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  margin: 0 auto 8px;
+
+}
+
+.fx-swap-btn:hover { background: #f3f4f6; }
+
+.fx-result {
+
+  padding: 10px;
+
+  background: #f9fafb;
+
+  border-radius: 8px;
+
+  text-align: center;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  color: var(--text-primary);
+
+  margin-bottom: 8px;
+
+}
+
+/* 单位换算 */
+
+.unit-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+
+.unit-row select, .unit-row input {
+
+  padding: 6px 8px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  font-family: inherit;
+
+  color: var(--text-primary);
+
+  outline: none;
+
+  background: #fff;
+
+}
+
+.unit-row select { flex: 0 0 auto; }
+
+.unit-row input { flex: 1; min-width: 0; }
+
+.unit-result {
+
+  padding: 10px;
+
+  background: #f9fafb;
+
+  border-radius: 8px;
+
+  text-align: center;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  color: var(--text-primary);
+
+}
+
+/* ---- 主题 ---- */
+
+.theme-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+}
+
+.theme-option {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  border: 2px solid transparent;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition: all var(--transition-fast);
+
+  background: #fff;
+
+}
+
+.theme-option:hover { border-color: #e5e7eb; }
+
+.theme-option.active { border-color: #4f6ef7; background: #eef2ff; }
+
+.theme-preview {
+
+  width: 28px; height: 28px;
+
+  border-radius: 8px;
+
+  border: 1px solid rgba(0,0,0,0.1);
+
+  flex-shrink: 0;
+
+}
+
+.theme-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+.theme-check { margin-left: auto; color: #4f6ef7; font-size: 16px; opacity: 0; }
+
+.theme-option.active .theme-check { opacity: 1; }
+
+/* 主题配色 */
+
+body.theme-light-blue { --bg-page: #eef5ff; background: linear-gradient(135deg, #eef5ff 0%, #f0f7ff 30%, #e8f0fe 100%); }
+
+body.theme-light-blue .left-sidebar { background: rgba(238,245,255,0.95); }
+
+body.theme-light-gray { --bg-page: #f5f5f5; background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 30%, #f0f0f0 100%); }
+
+body.theme-light-gray .left-sidebar { background: rgba(245,245,245,0.95); }
+
+body.theme-dark {
+
+  --bg-page: #1a1a2e;
+
+  --bg-column: rgba(30,30,50,0.8);
+
+  --border-column: #2d2d4a;
+
+  --text-primary: #e0e0f0;
+
+  --text-secondary: #9ca3bf;
+
+  --text-muted: #6b7299;
+
+  --color-tag-bg: #2d2d4a;
+
+  --color-tag-text: #b0b0d0;
+
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 100%);
+
+  color: #e0e0f0;
+
+}
+
+body.theme-dark .left-sidebar { background: rgba(26,26,46,0.95); border-right-color: #2d2d4a; }
+
+body.theme-dark .header, body.theme-dark .column, body.theme-dark .task-card,
+
+body.theme-dark .modal, body.theme-dark .context-menu { color: #e0e0f0; }
+
+body.theme-dark .task-card { background: rgba(30,30,50,0.9); border-color: #2d2d4a; }
+
+body.theme-dark .column { background: rgba(30,30,50,0.65); }
+
+body.theme-dark .modal { background: #1e1e36; }
+
+body.theme-dark .context-menu { background: rgba(30,30,50,0.96); }
+
+body.theme-dark .btn-secondary, body.theme-dark .filter-bar select,
+
+body.theme-dark .filter-bar input { background: #2d2d4a; border-color: #3d3d5c; color: #e0e0f0; }
+
+body.theme-dark .stat-item { background: rgba(30,30,50,0.8); border-color: #2d2d4a; }
+
+body.theme-dark input, body.theme-dark textarea, body.theme-dark select { background: #2d2d4a; border-color: #3d3d5c; color: #e0e0f0; }
+
+body.theme-dark .sidebar-icon-btn:hover { background: #2d2d4a; }
+
+body.theme-dark .sidebar-icon-btn.active { background: #2d2d4a; }
+
+body.theme-dark .daily-sidebar { background: #1e1e36; }
+
+body.theme-dark .daily-item-card { background: #2d2d4a; border-color: #3d3d5c; }
+
+body.theme-dark .toast { background: #e0e0f0; color: #1a1a2e; }
+
 </style>
+
 </head>
+
 <body>
 
+<!-- ==================== 左侧工具栏 ==================== -->
+
+<aside class="left-sidebar" id="leftSidebar">
+
+  <div class="sidebar-icons">
+
+    <button class="sidebar-icon-btn active" data-tool="timer" title="计时器">⏱️<span class="tooltip">计时器</span></button>
+
+    <button class="sidebar-icon-btn" data-tool="countdown" title="倒数日">📅<span class="tooltip">倒数日</span></button>
+
+    <button class="sidebar-icon-btn" data-tool="calc" title="计算器">🧮<span class="tooltip">计算器</span></button>
+
+    <button class="sidebar-icon-btn" data-tool="theme" title="主题">🎨<span class="tooltip">主题</span></button>
+
+  </div>
+
+  <div class="sidebar-panel-area" id="sidebarPanelArea">
+
+    <!-- 计时器面板 -->
+
+    <div class="sidebar-panel" id="panel-timer">
+
+      <div class="sidebar-panel-title">⏱️ 计时器</div>
+
+      <div class="timer-mode-switch">
+
+        <button class="timer-mode-btn active" data-mode="countdown">倒计时</button>
+
+        <button class="timer-mode-btn" data-mode="stopwatch">正计时</button>
+
+      </div>
+
+      <div class="timer-inputs" id="timerInputs">
+
+        <input type="number" id="timerH" min="0" max="99" value="0" placeholder="时">
+
+        <span>:</span>
+
+        <input type="number" id="timerM" min="0" max="59" value="5" placeholder="分">
+
+        <span>:</span>
+
+        <input type="number" id="timerS" min="0" max="59" value="0" placeholder="秒">
+
+      </div>
+
+      <div class="timer-display" id="timerDisplay">00:05:00</div>
+
+      <div class="timer-controls">
+
+        <button class="timer-ctrl-btn start" id="timerStart">开始</button>
+
+        <button class="timer-ctrl-btn pause" id="timerPause" style="display:none;">暂停</button>
+
+        <button class="timer-ctrl-btn reset" id="timerReset">重置</button>
+
+      </div>
+
+    </div>
+
+    <!-- 倒数日面板 -->
+
+    <div class="sidebar-panel" id="panel-countdown" style="display:none;">
+
+      <div class="sidebar-panel-title">📅 倒数日</div>
+
+      <div class="countdown-add-bar">
+
+        <input type="text" id="cdName" placeholder="名称">
+
+        <input type="date" id="cdDate">
+
+        <button class="btn-countdown-add" id="cdAddBtn">添加</button>
+
+      </div>
+
+      <div class="countdown-section-label">手动添加</div>
+
+      <div class="countdown-list" id="cdManualList"></div>
+
+      <div class="countdown-section-label">任务截止日期</div>
+
+      <div class="countdown-list" id="cdTaskList"></div>
+
+    </div>
+
+    <!-- 计算器面板 -->
+
+    <div class="sidebar-panel" id="panel-calc" style="display:none;">
+
+      <div class="sidebar-panel-title">🧮 计算器</div>
+
+      <div class="calc-tabs">
+
+        <button class="calc-tab active" data-calc="basic">基础</button>
+
+        <button class="calc-tab" data-calc="fx">汇率</button>
+
+        <button class="calc-tab" data-calc="unit">单位</button>
+
+      </div>
+
+      <!-- 基础计算器 -->
+
+      <div class="calc-panel active" id="calcBasic">
+
+        <div class="calc-display">
+
+          <div class="calc-expr" id="calcExpr"></div>
+
+          <div class="calc-result" id="calcResult">0</div>
+
+        </div>
+
+        <div class="calc-grid">
+
+          <button class="calc-btn op" data-val="C">C</button>
+
+          <button class="calc-btn op" data-val="±">±</button>
+
+          <button class="calc-btn op" data-val="%">%</button>
+
+          <button class="calc-btn op" data-val="÷">÷</button>
+
+          <button class="calc-btn" data-val="7">7</button>
+
+          <button class="calc-btn" data-val="8">8</button>
+
+          <button class="calc-btn" data-val="9">9</button>
+
+          <button class="calc-btn op" data-val="×">×</button>
+
+          <button class="calc-btn" data-val="4">4</button>
+
+          <button class="calc-btn" data-val="5">5</button>
+
+          <button class="calc-btn" data-val="6">6</button>
+
+          <button class="calc-btn op" data-val="-">-</button>
+
+          <button class="calc-btn" data-val="1">1</button>
+
+          <button class="calc-btn" data-val="2">2</button>
+
+          <button class="calc-btn" data-val="3">3</button>
+
+          <button class="calc-btn op" data-val="+">+</button>
+
+          <button class="calc-btn" data-val="0" style="grid-column:span 2;">0</button>
+
+          <button class="calc-btn" data-val=".">.</button>
+
+          <button class="calc-btn eq" data-val="=">=</button>
+
+        </div>
+
+      </div>
+
+      <!-- 汇率换算 -->
+
+      <div class="calc-panel" id="calcFx">
+
+        <div class="fx-row">
+
+          <select id="fxFrom"><option value="CNY">CNY</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="JPY">JPY</option><option value="GBP">GBP</option></select>
+
+          <input type="number" id="fxAmount" placeholder="金额" value="100">
+
+        </div>
+
+        <button class="fx-swap-btn" id="fxSwap">⇅</button>
+
+        <div class="fx-row">
+
+          <select id="fxTo"><option value="CNY">CNY</option><option value="USD" selected>USD</option><option value="EUR">EUR</option><option value="JPY">JPY</option><option value="GBP">GBP</option></select>
+
+        </div>
+
+        <div class="fx-result" id="fxResult">—</div>
+
+      </div>
+
+      <!-- 单位换算 -->
+
+      <div class="calc-panel" id="calcUnit">
+
+        <div class="unit-row">
+
+          <select id="unitCat">
+
+            <option value="length">长度</option>
+
+            <option value="weight">重量</option>
+
+            <option value="area">面积</option>
+
+            <option value="volume">体积</option>
+
+          </select>
+
+        </div>
+
+        <div class="unit-row">
+
+          <select id="unitFrom"></select>
+
+          <input type="number" id="unitAmount" placeholder="数值" value="1">
+
+        </div>
+
+        <div class="unit-row">
+
+          <select id="unitTo"></select>
+
+        </div>
+
+        <div class="unit-result" id="unitResult">—</div>
+
+      </div>
+
+    </div>
+
+    <!-- 主题面板 -->
+
+    <div class="sidebar-panel" id="panel-theme" style="display:none;">
+
+      <div class="sidebar-panel-title">🎨 主题</div>
+
+      <div class="theme-list" id="themeList">
+
+        <div class="theme-option active" data-theme="default">
+
+          <div class="theme-preview" style="background:linear-gradient(135deg,#fff9e6,#fdf6e3);"></div>
+
+          <span class="theme-name">浅黄（默认）</span>
+
+          <span class="theme-check">✓</span>
+
+        </div>
+
+        <div class="theme-option" data-theme="light-blue">
+
+          <div class="theme-preview" style="background:linear-gradient(135deg,#eef5ff,#e8f0fe);"></div>
+
+          <span class="theme-name">浅蓝</span>
+
+          <span class="theme-check">✓</span>
+
+        </div>
+
+        <div class="theme-option" data-theme="light-gray">
+
+          <div class="theme-preview" style="background:linear-gradient(135deg,#f5f5f5,#f0f0f0);"></div>
+
+          <span class="theme-name">浅灰</span>
+
+          <span class="theme-check">✓</span>
+
+        </div>
+
+        <div class="theme-option" data-theme="dark">
+
+          <div class="theme-preview" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);"></div>
+
+          <span class="theme-name">暗黑</span>
+
+          <span class="theme-check">✓</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</aside>
+
 <!-- ==================== HTML 结构 ==================== -->
+
 <header class="header">
+
   <h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+
     📋 任务看板
+
     <span class="data-dir-indicator" id="dataDirIndicator" title="当前数据存储位置">💾 localStorage</span>
+
     <button class="btn-data-dir" id="btnDataDir" title="选择文件夹以将数据保存为文件">📁 设置数据目录</button>
+
     <button class="btn-daily-todo" id="btnDailyTodo">📅 每日待办</button>
+
   </h1>
 
   <div class="stats-bar" id="statsBar">
+
     <div class="stat-item">总任务 <span class="stat-num" id="statTotal">0</span></div>
+
     <div class="stat-item done">✅ 已完成 <span class="stat-num" id="statDone">0</span></div>
+
     <div class="stat-item undone">⏳ 未完成 <span class="stat-num" id="statUndone">0</span></div>
+
   </div>
 
   <div class="filter-bar" id="filterBar">
+
     <label>优先级
+
       <select id="filterPriority">
+
         <option value="all">全部</option>
+
         <option value="high">🔴 高</option>
+
         <option value="medium">🟡 中</option>
+
         <option value="low">🟢 低</option>
+
       </select>
+
     </label>
+
     <label>标签
+
       <select id="filterTag"><option value="all">全部</option></select>
+
     </label>
+
     <label>截止日期
+
       <select id="filterDate">
+
         <option value="all">全部</option>
+
         <option value="today">今天</option>
+
         <option value="week">本周</option>
+
         <option value="month">本月</option>
+
       </select>
+
     </label>
+
     <label>排序
+
       <select id="sortBy">
+
         <option value="created">创建时间</option>
+
         <option value="dueDate">截止日期</option>
+
         <option value="priority">优先级</option>
+
       </select>
+
     </label>
+
   </div>
 
   <div class="batch-bar" id="batchBar">
+
     <span class="batch-count" id="batchCount">已选择 0 项</span>
+
     <button class="btn-batch-delete" id="btnBatchDelete">删除选中</button>
+
     <button class="btn-batch-cancel" id="btnBatchCancel">取消选择</button>
+
   </div>
+
 </header>
 
 <main class="board" id="board">
+
   <div class="column col-progress" data-status="in-progress" id="colInProgress">
+
     <div class="column-header">
+
       <span class="col-title">🔄 进行中 <span class="col-count" id="countInProgress">0</span></span>
+
       <button class="btn-add-task" data-status="in-progress" title="新增进行中任务">+</button>
+
     </div>
+
     <div class="card-list" id="listInProgress"></div>
+
   </div>
+
   <div class="column col-todo" data-status="todo" id="colTodo">
+
     <div class="column-header">
+
       <span class="col-title">📌 待处理 <span class="col-count" id="countTodo">0</span></span>
+
       <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
+
     </div>
+
     <div class="card-list" id="listTodo"></div>
+
   </div>
+
   <div class="column col-done" data-status="done" id="colDone">
+
     <div class="column-header">
+
       <span class="col-title">✅ 已完成 <span class="col-count" id="countDone">0</span></span>
+
       <button class="btn-add-task" data-status="done" title="新增已完成任务">+</button>
+
     </div>
+
     <div class="card-list" id="listDone"></div>
+
   </div>
+
 </main>
 
 <!-- 每日待办侧边栏 -->
+
 <div class="daily-overlay" id="dailyOverlay"></div>
+
 <aside class="daily-sidebar" id="dailySidebar">
+
   <div class="daily-sidebar-header">
+
     <h2>📅 每日待办</h2>
+
     <button class="daily-sidebar-close" id="dailySidebarClose">✕</button>
+
   </div>
+
   <div class="daily-date-bar" id="dailyDateBar">
+
     <div class="daily-date-label">
+
       <span id="dailyDateTitle"></span>
+
       <small id="dailyDateWeekday"></small>
+
     </div>
+
     <button class="btn-daily-calendar" id="dailyGoCalendar">📆 查看历史</button>
+
   </div>
+
   <div class="daily-body" id="dailyBody">
+
     <!-- 今日/日期待办视图 -->
+
     <div id="dailyTodayView">
+
       <div id="dailyEmptyHint" class="daily-empty">
+
         <span class="daily-empty-icon">📭</span>
+
         今天还没有待办<br>点击下方按钮创建
+
       </div>
+
       <button class="btn-daily-create" id="dailyCreateBtn" style="display:none;">＋ 创建今日待办</button>
+
       <ul class="daily-item-list" id="dailyItemList"></ul>
+
       <button class="btn-daily-add-item" id="dailyAddItemBtn" style="display:none;">＋ 新增待办</button>
+
       <div id="dailyAddFormContainer"></div>
+
     </div>
+
     <!-- 日历视图（默认隐藏） -->
+
     <div id="dailyCalendarView" style="display:none;">
+
       <div class="daily-calendar-header">
+
         <button class="daily-calendar-nav" id="dailyCalendarPrev">◀</button>
+
         <span class="daily-calendar-month" id="dailyCalendarMonth"></span>
+
         <button class="daily-calendar-nav" id="dailyCalendarNext">▶</button>
+
       </div>
+
       <div class="daily-calendar-grid" id="dailyCalendarGrid"></div>
+
       <button class="btn-back-today" id="dailyBackToday">← 返回今日</button>
+
     </div>
+
   </div>
+
 </aside>
 
 <div class="context-menu" id="contextMenu">
+
   <button class="menu-item" data-action="edit">✏️ 编辑</button>
+
   <button class="menu-item" data-action="copy">📋 复制任务</button>
+
   <div class="menu-divider"></div>
+
   <button class="menu-item" data-action="move-todo">📌 移至待处理</button>
+
   <button class="menu-item" data-action="move-progress">🔄 移至进行中</button>
+
   <button class="menu-item" data-action="move-done">✅ 移至已完成</button>
+
   <div class="menu-divider"></div>
+
   <button class="menu-item danger" data-action="delete">🗑 删除</button>
+
 </div>
 
 <div id="modalContainer"></div>
+
 <div id="toastContainer"></div>
 
 <script>
+
 'use strict';
 
 /* ============================
+
  * DataStorage — 数据存储抽象层
+
  * 支持：File System Access API（优先）+ localStorage（回退/备份）
+
  * ============================ */
+
 class DataStorage {
+
   constructor() {
+
     this._mode = 'localStorage'; // 'localStorage' | 'fileSystem'
+
     this._dirHandle = null;
+
     this._dirName = '';
+
     this._localKey = 'task-board-data';
+
     this._configKey = 'task-board-config';
+
     this._fsAvailable = (typeof window.showDirectoryPicker === 'function');
+
   }
 
   get mode() { return this._mode; }
+
   get dirName() { return this._dirName; }
+
   get fsAvailable() { return this._fsAvailable; }
 
   async init() {
+
     try {
+
       const cfgRaw = localStorage.getItem(this._configKey);
+
       if (!cfgRaw) return;
+
       const cfg = JSON.parse(cfgRaw);
+
       if (cfg.mode === 'fileSystem' && cfg.dirName && this._fsAvailable) {
+
         try {
+
           this._dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'desktop' });
+
           if (this._dirHandle.name !== cfg.dirName) {
+
             this._dirHandle = null;
+
             this._mode = 'localStorage';
+
             this._dirName = '';
+
             this._saveConfig();
+
             return;
+
           }
+
           this._mode = 'fileSystem';
+
           this._dirName = cfg.dirName;
+
           console.log(`📁 已恢复文件存储目录: ${this._dirName}`);
+
         } catch (e) {
+
           console.warn('恢复文件目录权限失败，使用 localStorage', e);
+
           this._mode = 'localStorage';
+
           this._dirHandle = null;
+
           this._dirName = '';
+
           this._saveConfig();
+
         }
+
       }
+
     } catch (e) {
+
       console.warn('DataStorage 初始化失败', e);
+
     }
+
   }
 
   async selectDirectory() {
+
     if (!this._fsAvailable) {
+
       throw new Error('当前浏览器不支持 File System Access API（需要 Chrome 86+/Edge 86+）');
+
     }
+
     try {
+
       const handle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'desktop' });
+
       this._dirHandle = handle;
+
       this._dirName = handle.name;
+
       this._mode = 'fileSystem';
+
       this._saveConfig();
+
       return this._dirName;
+
     } catch (e) {
+
       if (e.name === 'AbortError') return null;
+
       throw e;
+
     }
+
   }
 
   switchToLocal() {
+
     this._mode = 'localStorage';
+
     this._dirHandle = null;
+
     this._dirName = '';
+
     this._saveConfig();
+
   }
 
   _saveConfig() {
+
     const cfg = { mode: this._mode, dirName: this._dirName };
+
     localStorage.setItem(this._configKey, JSON.stringify(cfg));
+
   }
 
   async loadFromFile() {
+
     if (!this._dirHandle) throw new Error('未设置文件目录');
+
     try {
+
       let fileHandle;
+
       try {
+
         fileHandle = await this._dirHandle.getFileHandle('tasks.json');
+
       } catch {
+
         return [];
+
       }
+
       const file = await fileHandle.getFile();
+
       const text = await file.text();
+
       return JSON.parse(text);
+
     } catch (e) {
+
       console.warn('从文件读取数据失败', e);
+
       throw e;
+
     }
+
   }
 
   async saveToFile(data) {
+
     if (!this._dirHandle) throw new Error('未设置文件目录');
+
     try {
+
       const fileHandle = await this._dirHandle.getFileHandle('tasks.json', { create: true });
+
       const writable = await fileHandle.createWritable();
+
       await writable.write(JSON.stringify(data, null, 2));
+
       await writable.close();
+
       return true;
+
     } catch (e) {
+
       console.error('写入文件失败', e);
+
       throw e;
+
     }
+
   }
 
   loadFromLocal() {
+
     try {
+
       const raw = localStorage.getItem(this._localKey);
+
       return raw ? JSON.parse(raw) : [];
+
     } catch (e) {
+
       console.warn('localStorage 读取失败', e);
+
       return [];
+
     }
+
   }
 
   saveToLocal(data) {
+
     try {
+
       localStorage.setItem(this._localKey, JSON.stringify(data));
+
     } catch (e) {
+
       console.error('localStorage 写入失败', e);
+
     }
+
   }
+
 }
 
 /* ============================
+
  * TaskManager — 数据管理层
+
  * ============================ */
+
 class TaskManager {
+
   constructor(dataStorage) {
+
     this._ds = dataStorage;
+
     this.tasks = [];
+
   }
 
   async init() {
+
     await this._ds.init();
+
     if (this._ds.mode === 'fileSystem' && this._ds.fsAvailable) {
+
       try {
+
         this.tasks = await this._ds.loadFromFile();
+
         console.log(`📁 已从文件加载 ${this.tasks.length} 个任务`);
+
       } catch (e) {
+
         console.warn('文件加载失败，回退到 localStorage', e);
+
         this.tasks = this._ds.loadFromLocal();
+
       }
+
     } else {
+
       this.tasks = this._ds.loadFromLocal();
+
       console.log(`💾 已从 localStorage 加载 ${this.tasks.length} 个任务`);
+
     }
+
     this.tasks = this.tasks.map(t => ({
+
       id: t.id || crypto.randomUUID(),
+
       title: t.title || '',
+
       description: t.description || '',
+
       dueDate: t.dueDate || '',
+
       priority: t.priority || 'medium',
+
       tags: Array.isArray(t.tags) ? t.tags : [],
+
       status: t.status || 'todo',
+
       createdAt: t.createdAt || Date.now(),
+
       progress: Array.isArray(t.progress) ? t.progress : []
+
     }));
+
     await this._persist();
+
   }
 
   async _persist() {
+
     if (this._ds.mode === 'fileSystem' && this._ds.fsAvailable) {
+
       try {
+
         await this._ds.saveToFile(this.tasks);
+
       } catch (e) {
+
         console.warn('文件写入失败，使用 localStorage 备份', e);
+
         this._ds.saveToLocal(this.tasks);
+
       }
+
     }
+
     this._ds.saveToLocal(this.tasks);
+
   }
 
   async setFileDirectory() {
+
     const dirName = await this._ds.selectDirectory();
+
     if (!dirName) return null;
+
     await this._persist();
+
     return dirName;
+
   }
 
   async switchToLocalStorage() {
+
     this._ds.switchToLocal();
+
     await this._persist();
+
   }
 
   get storageMode() { return this._ds.mode; }
+
   get storageDirName() { return this._ds.dirName; }
 
   getAll() { return this.tasks; }
@@ -1601,1227 +4071,3150 @@ class TaskManager {
   getById(id) { return this.tasks.find(t => t.id === id) || null; }
 
   async add(taskData) {
+
     const task = {
+
       id: crypto.randomUUID(),
+
       title: taskData.title || '未命名任务',
+
       description: taskData.description || '',
+
       dueDate: taskData.dueDate || '',
+
       priority: taskData.priority || 'medium',
+
       tags: Array.isArray(taskData.tags) ? [...taskData.tags] : [],
+
       status: taskData.status || 'todo',
+
       createdAt: Date.now(),
+
       progress: []
+
     };
+
     this.tasks.push(task);
+
     await this._persist();
+
     return task;
+
   }
 
   async update(id, updates) {
+
     const idx = this.tasks.findIndex(t => t.id === id);
+
     if (idx === -1) return null;
+
     this.tasks[idx] = { ...this.tasks[idx], ...updates };
+
     await this._persist();
+
     return this.tasks[idx];
+
   }
 
   async delete(id) {
+
     const idx = this.tasks.findIndex(t => t.id === id);
+
     if (idx === -1) return false;
+
     this.tasks.splice(idx, 1);
+
     await this._persist();
+
     return true;
+
   }
 
   async deleteMany(ids) {
+
     const idSet = new Set(ids);
+
     this.tasks = this.tasks.filter(t => !idSet.has(t.id));
+
     await this._persist();
+
   }
 
   async copy(id) {
+
     const original = this.getById(id);
+
     if (!original) return null;
+
     const copy = {
+
       ...original,
+
       id: crypto.randomUUID(),
+
       title: original.title + ' (副本)',
+
       createdAt: Date.now(),
+
       progress: original.progress ? original.progress.map(p => ({...p})) : []
+
     };
+
     this.tasks.push(copy);
+
     await this._persist();
+
     return copy;
+
   }
 
   async addProgress(taskId, text) {
+
     const task = this.getById(taskId);
+
     if (!task) return null;
+
     if (!Array.isArray(task.progress)) task.progress = [];
+
     const record = { text: text.trim(), time: Date.now() };
+
     task.progress.push(record);
+
     await this._persist();
+
     return record;
+
   }
 
   async deleteProgress(taskId, index) {
+
     const task = this.getById(taskId);
+
     if (!task || !Array.isArray(task.progress)) return false;
+
     if (index < 0 || index >= task.progress.length) return false;
+
     task.progress.splice(index, 1);
+
     await this._persist();
+
     return true;
+
   }
 
   async updateProgress(taskId, index, newText) {
+
     const task = this.getById(taskId);
+
     if (!task || !Array.isArray(task.progress)) return false;
+
     if (index < 0 || index >= task.progress.length) return false;
+
     task.progress[index].text = newText.trim();
+
     await this._persist();
+
     return true;
+
   }
 
   getFilteredAndSorted(filters, sortBy) {
+
     let result = [...this.tasks];
+
     if (filters.priority && filters.priority !== 'all') {
+
       result = result.filter(t => t.priority === filters.priority);
+
     }
+
     if (filters.tag && filters.tag !== 'all') {
+
       result = result.filter(t => t.tags && t.tags.includes(filters.tag));
+
     }
+
     if (filters.date && filters.date !== 'all') {
+
       const now = new Date();
+
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
       const todayEnd = new Date(todayStart.getTime() + 86400000);
+
       if (filters.date === 'today') {
+
         result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= todayStart && new Date(t.dueDate + 'T00:00:00') < todayEnd);
+
       } else if (filters.date === 'week') {
+
         const dayOfWeek = now.getDay() || 7;
+
         const weekStart = new Date(todayStart);
+
         weekStart.setDate(weekStart.getDate() - dayOfWeek + 1);
+
         const weekEnd = new Date(weekStart);
+
         weekEnd.setDate(weekEnd.getDate() + 7);
+
         result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= weekStart && new Date(t.dueDate + 'T00:00:00') < weekEnd);
+
       } else if (filters.date === 'month') {
+
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
         result = result.filter(t => t.dueDate && new Date(t.dueDate + 'T00:00:00') >= monthStart && new Date(t.dueDate + 'T00:00:00') < monthEnd);
+
       }
+
     }
+
     if (sortBy === 'dueDate') {
+
       result.sort((a, b) => {
+
         if (!a.dueDate && !b.dueDate) return 0;
+
         if (!a.dueDate) return 1;
+
         if (!b.dueDate) return -1;
+
         return new Date(a.dueDate) - new Date(b.dueDate);
+
       });
+
     } else if (sortBy === 'priority') {
+
       const order = { high: 0, medium: 1, low: 2 };
+
       result.sort((a, b) => (order[a.priority] ?? 1) - (order[b.priority] ?? 1));
+
     } else {
+
       result.sort((a, b) => b.createdAt - a.createdAt);
+
     }
+
     return result;
+
   }
 
   getAllTags() {
+
     const tagSet = new Set();
+
     this.tasks.forEach(t => { if (Array.isArray(t.tags)) t.tags.forEach(tag => tagSet.add(tag)); });
+
     return [...tagSet].sort();
+
   }
 
   getStats() {
+
     const total = this.tasks.length;
+
     const done = this.tasks.filter(t => t.status === 'done').length;
+
     return { total, done, undone: total - done };
+
   }
+
 }
 
 /* ============================
+
  * UIManager — UI 渲染与交互层
+
  * ============================ */
+
 class UIManager {
+
   constructor(taskManager) {
+
     this.tm = taskManager;
+
     this.draggingTaskId = null;
+
     this.selectedCardIds = new Set();
+
     this.contextMenuTargetId = null;
+
     this.cacheDom();
+
     this.bindEvents();
+
     this.refreshAll();
+
     this.updateDataDirIndicator();
+
   }
 
   cacheDom() {
+
     this.$board = document.getElementById('board');
+
     this.$batchBar = document.getElementById('batchBar');
+
     this.$batchCount = document.getElementById('batchCount');
+
     this.$contextMenu = document.getElementById('contextMenu');
+
     this.$modalContainer = document.getElementById('modalContainer');
+
     this.$toastContainer = document.getElementById('toastContainer');
+
     this.$statTotal = document.getElementById('statTotal');
+
     this.$statDone = document.getElementById('statDone');
+
     this.$statUndone = document.getElementById('statUndone');
+
     this.$filterPriority = document.getElementById('filterPriority');
+
     this.$filterTag = document.getElementById('filterTag');
+
     this.$filterDate = document.getElementById('filterDate');
+
     this.$sortBy = document.getElementById('sortBy');
+
     this.$btnBatchDelete = document.getElementById('btnBatchDelete');
+
     this.$btnBatchCancel = document.getElementById('btnBatchCancel');
+
     this.$btnDataDir = document.getElementById('btnDataDir');
+
     this.$dataDirIndicator = document.getElementById('dataDirIndicator');
+
     this.columnMap = {
+
       'todo': { list: document.getElementById('listTodo'), count: document.getElementById('countTodo') },
+
       'in-progress': { list: document.getElementById('listInProgress'), count: document.getElementById('countInProgress') },
+
       'done': { list: document.getElementById('listDone'), count: document.getElementById('countDone') }
+
     };
+
   }
 
   bindEvents() {
+
+    // 拖拽防误触：追踪鼠标是否发生了实际移动
+
+    this._mouseDownPos = null;
+
+    this._mouseMoved = false;
+
     document.querySelectorAll('.btn-add-task').forEach(btn => {
+
       btn.addEventListener('click', (e) => {
+
         const status = e.currentTarget.dataset.status;
+
         this.openModal(null, status);
+
       });
+
     });
 
-    this.$board.addEventListener('dblclick', (e) => {
+    // 单击触发编辑（替代原来的 dblclick），同时防止拖拽误触
+
+    this.$board.addEventListener('mousedown', (e) => {
+
       const card = e.target.closest('.task-card');
-      if (card) this.openModal(card.dataset.taskId);
+
+      if (card && e.button === 0) {
+
+        this._mouseDownPos = { x: e.clientX, y: e.clientY };
+
+        this._mouseMoved = false;
+
+      }
+
+    });
+
+    this.$board.addEventListener('mousemove', (e) => {
+
+      if (this._mouseDownPos) {
+
+        const dx = Math.abs(e.clientX - this._mouseDownPos.x);
+
+        const dy = Math.abs(e.clientY - this._mouseDownPos.y);
+
+        if (dx > 5 || dy > 5) this._mouseMoved = true;
+
+      }
+
+    });
+
+    this.$board.addEventListener('click', (e) => {
+
+      const card = e.target.closest('.task-card');
+
+      if (!card) return;
+
+      // 如果是 checkbox 点击，不触发编辑
+
+      if (e.target.classList.contains('card-checkbox')) return;
+
+      // 如果发生了拖拽移动，不触发编辑
+
+      if (this._mouseMoved) return;
+
+      this.openModal(card.dataset.taskId);
+
+    });
+
+    document.addEventListener('mouseup', () => {
+
+      this._mouseDownPos = null;
+
     });
 
     this.$board.addEventListener('dragstart', (e) => {
+
       const card = e.target.closest('.task-card');
+
       if (!card) return;
+
       this.draggingTaskId = card.dataset.taskId;
+
       card.classList.add('dragging');
+
       e.dataTransfer.effectAllowed = 'move';
+
       e.dataTransfer.setData('text/plain', card.dataset.taskId);
+
     });
 
     this.$board.addEventListener('dragend', (e) => {
+
       const card = e.target.closest('.task-card');
+
       if (card) card.classList.remove('dragging');
+
       this.draggingTaskId = null;
+
+      this._mouseMoved = false;
+
       document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+
     });
 
     document.querySelectorAll('.column').forEach(column => {
+
       column.addEventListener('dragover', (e) => {
+
         e.preventDefault();
+
         e.dataTransfer.dropEffect = 'move';
+
         column.classList.add('drag-over');
+
       });
+
       column.addEventListener('dragleave', (e) => {
+
         if (!column.contains(e.relatedTarget)) column.classList.remove('drag-over');
+
       });
+
       column.addEventListener('drop', (e) => {
+
         e.preventDefault();
+
         column.classList.remove('drag-over');
+
         const taskId = e.dataTransfer.getData('text/plain');
+
         const newStatus = column.dataset.status;
+
         if (taskId && newStatus) this.moveTask(taskId, newStatus);
+
       });
+
     });
 
     this.$board.addEventListener('contextmenu', (e) => {
+
       const card = e.target.closest('.task-card');
+
       if (card) {
+
         e.preventDefault();
+
         this.contextMenuTargetId = card.dataset.taskId;
+
         this.showContextMenu(e.clientX, e.clientY);
+
       }
+
     });
 
     document.addEventListener('click', (e) => {
+
       if (!this.$contextMenu.contains(e.target)) this.hideContextMenu();
+
     });
 
     this.$contextMenu.addEventListener('click', (e) => {
+
       const menuItem = e.target.closest('.menu-item');
+
       if (!menuItem) return;
+
       this.handleContextAction(menuItem.dataset.action, this.contextMenuTargetId);
+
       this.hideContextMenu();
+
     });
 
     this.$board.addEventListener('change', (e) => {
+
       if (e.target.classList.contains('card-checkbox')) {
+
         const taskId = e.target.dataset.taskId;
+
         if (e.target.checked) this.selectedCardIds.add(taskId);
+
         else this.selectedCardIds.delete(taskId);
+
         this.updateBatchBar();
+
       }
+
     });
 
     this.$btnBatchDelete.addEventListener('click', () => {
+
       if (this.selectedCardIds.size === 0) return;
+
       if (confirm(`确定要删除选中的 ${this.selectedCardIds.size} 个任务吗？此操作不可撤销。`)) {
+
         this.tm.deleteMany([...this.selectedCardIds]);
+
         this.selectedCardIds.clear();
+
         this.updateBatchBar();
+
         this.refreshAll();
+
         this.showToast('已删除选中任务');
+
       }
+
     });
 
     this.$btnBatchCancel.addEventListener('click', () => {
+
       this.selectedCardIds.clear();
+
       this.updateBatchBar();
+
       this.refreshAll();
+
     });
 
     [this.$filterPriority, this.$filterTag, this.$filterDate, this.$sortBy].forEach(el => {
+
       el.addEventListener('change', () => this.refreshBoard());
+
     });
 
     // 数据目录按钮
+
     this.$btnDataDir.addEventListener('click', () => this.handleDataDir());
+
   }
 
   refreshAll() {
+
     this.refreshBoard();
+
     this.refreshStats();
+
     this.refreshTagFilter();
+
   }
 
   refreshBoard() {
+
     const filters = {
+
       priority: this.$filterPriority.value,
+
       tag: this.$filterTag.value,
+
       date: this.$filterDate.value
+
     };
+
     const sortBy = this.$sortBy.value;
+
     const filteredTasks = this.tm.getFilteredAndSorted(filters, sortBy);
+
     const grouped = { 'todo': [], 'in-progress': [], 'done': [] };
+
     filteredTasks.forEach(t => {
+
       if (grouped[t.status]) grouped[t.status].push(t);
+
       else grouped['todo'].push(t);
+
     });
+
     Object.entries(grouped).forEach(([status, tasks]) => {
+
       const col = this.columnMap[status];
+
       if (!col) return;
+
       col.list.innerHTML = '';
+
       col.count.textContent = tasks.length;
+
       tasks.forEach(task => col.list.appendChild(this.createCardElement(task)));
+
     });
+
     this.restoreCheckboxStates();
+
   }
 
   refreshStats() {
+
     const stats = this.tm.getStats();
+
     this.$statTotal.textContent = stats.total;
+
     this.$statDone.textContent = stats.done;
+
     this.$statUndone.textContent = stats.undone;
+
   }
 
   refreshTagFilter() {
+
     const tags = this.tm.getAllTags();
+
     const currentValue = this.$filterTag.value;
+
     this.$filterTag.innerHTML = '<option value="all">全部</option>';
+
     tags.forEach(tag => {
+
       const opt = document.createElement('option');
+
       opt.value = tag;
+
       opt.textContent = tag;
+
       this.$filterTag.appendChild(opt);
+
     });
+
     if (tags.includes(currentValue)) this.$filterTag.value = currentValue;
+
   }
 
   createCardElement(task) {
+
     const card = document.createElement('div');
+
     card.className = 'task-card';
+
     card.dataset.taskId = task.id;
+
     card.draggable = true;
+
     const priorityLabels = { high: '🔴 高', medium: '🟡 中', low: '🟢 低' };
+
     let dueDateHtml = '';
+
     if (task.dueDate) {
+
       const dueDate = new Date(task.dueDate + 'T00:00:00');
+
       const today = new Date(); today.setHours(0,0,0,0);
+
       const isOverdue = dueDate < today && task.status !== 'done';
+
       dueDateHtml = `<span class="due-date ${isOverdue ? 'overdue' : ''}">📅 ${task.dueDate}${isOverdue ? ' (已逾期)' : ''}</span>`;
+
     }
+
     let tagsHtml = '';
+
     if (task.tags && task.tags.length > 0) {
+
       tagsHtml = '<span class="category-tags">' + task.tags.map(t => `<span class="category-tag">${this.escapeHtml(t)}</span>`).join('') + '</span>';
+
     }
+
     let descHtml = '';
+
     if (task.description) descHtml = `<div class="card-desc">${this.escapeHtml(task.description)}</div>`;
+
     let progressPreviewHtml = '';
+
     if (task.progress && task.progress.length > 0) {
+
       const latestProgress = task.progress[task.progress.length - 1];
+
       const previewText = latestProgress.text.length > 30 ? latestProgress.text.slice(0, 30) + '…' : latestProgress.text;
+
       progressPreviewHtml = `<div class="card-progress-preview"><span class="progress-label">💬</span>${this.escapeHtml(previewText)}</div>`;
+
     }
+
     card.innerHTML = `
+
       <input type="checkbox" class="card-checkbox" data-task-id="${task.id}">
+
       <div class="card-title">${this.escapeHtml(task.title)}</div>
+
       ${descHtml}
+
       ${progressPreviewHtml}
+
       <div class="card-meta">
+
         <span class="priority-tag ${task.priority}">${priorityLabels[task.priority]}</span>
+
         ${tagsHtml}
+
         ${dueDateHtml}
+
       </div>
+
     `;
+
     return card;
+
   }
 
   escapeHtml(str) {
+
     const div = document.createElement('div');
+
     div.textContent = str;
+
     return div.innerHTML;
+
   }
 
   restoreCheckboxStates() {
+
     this.selectedCardIds.forEach(taskId => {
+
       const cb = document.querySelector(`.card-checkbox[data-task-id="${taskId}"]`);
+
       if (cb) cb.checked = true;
+
     });
+
     this.updateBatchBar();
+
   }
 
   updateBatchBar() {
+
     if (this.selectedCardIds.size > 0) {
+
       this.$batchBar.classList.add('visible');
+
       this.$batchCount.textContent = `已选择 ${this.selectedCardIds.size} 项`;
+
     } else {
+
       this.$batchBar.classList.remove('visible');
+
     }
+
   }
 
   moveTask(taskId, newStatus) {
+
     const task = this.tm.getById(taskId);
+
     if (!task || task.status === newStatus) return;
+
     this.tm.update(taskId, { status: newStatus });
+
     this.refreshAll();
+
     const statusLabels = { 'todo': '待处理', 'in-progress': '进行中', 'done': '已完成' };
+
     this.showToast(`已移至「${statusLabels[newStatus]}」`);
+
   }
 
   showContextMenu(x, y) {
+
     this.$contextMenu.classList.add('show');
+
     let left = x, top = y;
+
     if (left + 160 > window.innerWidth) left = window.innerWidth - 170;
+
     if (top + 220 > window.innerHeight) top = window.innerHeight - 230;
+
     this.$contextMenu.style.left = left + 'px';
+
     this.$contextMenu.style.top = top + 'px';
+
   }
 
   hideContextMenu() {
+
     this.$contextMenu.classList.remove('show');
+
     this.contextMenuTargetId = null;
+
   }
 
   handleContextAction(action, taskId) {
+
     if (!taskId) return;
+
     const task = this.tm.getById(taskId);
+
     if (!task) return;
+
     switch (action) {
+
       case 'edit': this.openModal(taskId); break;
+
       case 'copy': {
+
         const copy = this.tm.copy(taskId);
+
         if (copy) { this.refreshAll(); this.showToast('已复制任务'); }
+
         break;
+
       }
+
       case 'move-todo': this.moveTask(taskId, 'todo'); break;
+
       case 'move-progress': this.moveTask(taskId, 'in-progress'); break;
+
       case 'move-done': this.moveTask(taskId, 'done'); break;
+
       case 'delete': {
+
         if (confirm('确定要删除这个任务吗？')) {
+
           this.tm.delete(taskId);
+
           this.selectedCardIds.delete(taskId);
+
           this.updateBatchBar();
+
           this.refreshAll();
+
           this.showToast('已删除任务');
+
         }
+
         break;
+
       }
+
     }
+
   }
 
   /* ---------- 数据目录管理 ---------- */
+
   updateDataDirIndicator() {
+
     const mode = this.tm.storageMode;
+
     if (mode === 'fileSystem') {
+
       this.$dataDirIndicator.textContent = `📁 ${this.tm.storageDirName}/tasks.json`;
+
       this.$dataDirIndicator.className = 'data-dir-indicator file-mode';
+
       this.$btnDataDir.textContent = '🔄 切换回 localStorage';
+
     } else {
+
       this.$dataDirIndicator.textContent = '💾 localStorage';
+
       this.$dataDirIndicator.className = 'data-dir-indicator';
+
       this.$btnDataDir.textContent = '📁 设置数据目录';
+
     }
+
   }
 
   async handleDataDir() {
+
     if (this.tm.storageMode === 'fileSystem') {
+
       if (!confirm('切换回 localStorage 模式后，数据将不再自动保存到文件。\n\n（已保存的 tasks.json 文件不会被删除）')) return;
+
       await this.tm.switchToLocalStorage();
+
       this.refreshAll();
+
       this.updateDataDirIndicator();
+
       this.showToast('已切换回 localStorage 模式');
+
     } else {
+
       try {
+
         const dirName = await this.tm.setFileDirectory();
+
         if (dirName) {
+
           this.refreshAll();
+
           this.updateDataDirIndicator();
+
           this.showToast(`数据目录已设置为「${dirName}」`);
+
         }
+
       } catch (e) {
+
         console.error(e);
+
         this.showToast('⚠️ 设置失败: ' + e.message);
+
       }
+
     }
+
   }
 
   /* ---------- Modal ---------- */
+
   openModal(taskIdOrNull, presetStatus) {
+
     const isEdit = taskIdOrNull !== null;
+
     const task = isEdit ? this.tm.getById(taskIdOrNull) : null;
+
     const initialStatus = isEdit ? task.status : (presetStatus || 'todo');
+
     const initialTags = isEdit ? (task.tags || []) : [];
 
     const modalHtml = `
+
       <div class="modal-overlay" id="modalOverlay">
+
         <div class="modal" id="modal">
+
           <h2>${isEdit ? '编辑任务' : '新增任务'}</h2>
+
           <div class="form-group"><label>标题 *</label><input type="text" id="inputTitle" value="${isEdit ? this.escapeHtml(task.title) : ''}" placeholder="输入任务标题" autofocus></div>
+
           <div class="form-group"><label>描述</label><textarea id="inputDesc" placeholder="添加详细描述（可选）">${isEdit ? this.escapeHtml(task.description) : ''}</textarea></div>
+
           <div class="form-group"><label>截止日期</label><input type="date" id="inputDueDate" value="${isEdit ? task.dueDate : ''}"></div>
+
           <div class="form-group"><label>优先级</label>
+
             <select id="inputPriority">
+
               <option value="high" ${(isEdit && task.priority === 'high') ? 'selected' : ''}>🔴 高优先级</option>
+
               <option value="medium" ${(!isEdit || task.priority === 'medium') ? 'selected' : ''}>🟡 中优先级</option>
+
               <option value="low" ${(isEdit && task.priority === 'low') ? 'selected' : ''}>🟢 低优先级</option>
+
             </select>
+
           </div>
+
           <div class="form-group"><label>状态</label>
+
             <select id="inputStatus">
+
               <option value="todo" ${initialStatus === 'todo' ? 'selected' : ''}>📌 待处理</option>
+
               <option value="in-progress" ${initialStatus === 'in-progress' ? 'selected' : ''}>🔄 进行中</option>
+
               <option value="done" ${initialStatus === 'done' ? 'selected' : ''}>✅ 已完成</option>
+
             </select>
+
           </div>
+
           <div class="form-group"><label>标签</label>
+
             <div class="tag-input-wrapper" id="tagWrapper">
+
               ${initialTags.map(tag => `<span class="tag-chip"><span>${this.escapeHtml(tag)}</span><span class="tag-remove" data-tag="${this.escapeHtml(tag)}">&times;</span></span>`).join('')}
+
               <input type="text" class="tag-input" id="inputTag" placeholder="输入标签后回车">
+
             </div>
+
           </div>
+
           ${isEdit ? `
+
           <div class="progress-section" id="progressSection">
+
             <button class="progress-section-toggle" id="progressToggle" type="button">
+
               <span>💬 进展记录 <span id="progressBadge" style="font-size:11px;color:var(--text-muted);font-weight:400;"></span></span>
+
               <span class="toggle-icon">▼</span>
+
             </button>
+
             <div class="progress-section-body" id="progressBody">
+
               <div class="progress-history" id="progressHistory"></div>
+
               <div class="progress-add-bar">
+
                 <textarea id="progressInput" placeholder="输入进展内容…" rows="2"></textarea>
+
                 <button class="btn-progress-add" id="btnProgressAdd" type="button">添加</button>
+
               </div>
+
             </div>
+
           </div>
+
           ` : ''}
+
           <div class="form-actions">
+
             <button class="btn-secondary" id="btnModalCancel">取消</button>
+
             <button class="btn-primary" id="btnModalSave">${isEdit ? '保存修改' : '创建任务'}</button>
+
           </div>
+
         </div>
+
       </div>
+
     `;
 
     this.$modalContainer.innerHTML = modalHtml;
 
     const $overlay = document.getElementById('modalOverlay');
+
     const $inputTitle = document.getElementById('inputTitle');
+
     const $inputDesc = document.getElementById('inputDesc');
+
     const $inputDueDate = document.getElementById('inputDueDate');
+
     const $inputPriority = document.getElementById('inputPriority');
+
     const $inputStatus = document.getElementById('inputStatus');
+
     const $tagWrapper = document.getElementById('tagWrapper');
+
     const $inputTag = document.getElementById('inputTag');
+
     let currentTags = [...initialTags];
 
     const renderTags = () => {
+
       $tagWrapper.querySelectorAll('.tag-chip').forEach(c => c.remove());
+
       currentTags.forEach(tag => {
+
         const chip = document.createElement('span');
+
         chip.className = 'tag-chip';
+
         chip.innerHTML = `<span>${this.escapeHtml(tag)}</span><span class="tag-remove" data-tag="${this.escapeHtml(tag)}">&times;</span>`;
+
         chip.querySelector('.tag-remove').addEventListener('click', () => {
+
           currentTags = currentTags.filter(t => t !== tag);
+
           renderTags();
+
         });
+
         $tagWrapper.insertBefore(chip, $inputTag);
+
       });
+
     };
 
     const addTag = (tagName) => {
+
       const trimmed = tagName.trim();
+
       if (!trimmed || currentTags.includes(trimmed)) { $inputTag.value = ''; return; }
+
       currentTags.push(trimmed);
+
       $inputTag.value = '';
+
       renderTags();
+
     };
 
     $inputTag.addEventListener('keydown', (e) => {
+
       if (e.key === 'Enter') { e.preventDefault(); addTag($inputTag.value); }
+
       else if (e.key === 'Backspace' && $inputTag.value === '' && currentTags.length > 0) { currentTags.pop(); renderTags(); }
+
     });
 
     $tagWrapper.addEventListener('click', (e) => {
+
       const removeBtn = e.target.closest('.tag-remove');
+
       if (removeBtn) {
+
         currentTags = currentTags.filter(t => t !== removeBtn.dataset.tag);
+
         renderTags();
+
       }
+
     });
 
     // ===== 进展板块（仅编辑模式） =====
+
     if (isEdit) {
+
       const $progressToggle = document.getElementById('progressToggle');
+
       const $progressBody = document.getElementById('progressBody');
+
       const $progressHistory = document.getElementById('progressHistory');
+
       const $progressBadge = document.getElementById('progressBadge');
+
       const $progressInput = document.getElementById('progressInput');
+
       const $btnProgressAdd = document.getElementById('btnProgressAdd');
+
       let progressExpanded = false;
 
       const formatTime = (timestamp) => {
+
         const d = new Date(timestamp);
+
         const pad = (n) => String(n).padStart(2, '0');
+
         return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
       };
 
       const getProgressList = () => {
+
         const t = this.tm.getById(taskIdOrNull);
+
         return (t && Array.isArray(t.progress)) ? t.progress : [];
+
       };
 
       const renderHistory = () => {
+
         const plist = getProgressList();
+
         $progressBadge.textContent = plist.length > 0 ? `(${plist.length}条)` : '';
+
         if (plist.length === 0) {
+
           $progressHistory.innerHTML = '<div class="progress-empty">暂无进展记录，在下方添加第一条</div>';
+
           return;
+
         }
+
         $progressHistory.innerHTML = plist.map((p, i) => ({...p, _rawIdx: i})).reverse().map(p => `
+
           <div class="progress-item" data-progress-index="${p._rawIdx}">
+
             <div class="progress-avatar">💬</div>
+
             <div class="progress-content">
+
               <div class="progress-text" id="progressText_${p._rawIdx}">${this.escapeHtml(p.text)}</div>
+
               <div class="progress-time">${formatTime(p.time)}</div>
+
             </div>
+
             <button class="progress-delete" data-progress-index="${p._rawIdx}" title="编辑此进展">✏️</button>
+
             <button class="progress-delete" data-progress-index="${p._rawIdx}" title="删除此进展">&times;</button>
+
           </div>
+
         `).join('');
 
         $progressHistory.querySelectorAll('.progress-delete').forEach(btn => {
+
           btn.addEventListener('click', (e) => {
+
             e.stopPropagation();
+
             const idx = parseInt(btn.dataset.progressIndex, 10);
+
             if (isNaN(idx)) return;
+
             if (btn.textContent.trim() === '×') {
+
               if (confirm('确定要删除这条进展记录吗？')) {
+
                 this.tm.deleteProgress(taskIdOrNull, idx);
+
                 renderHistory();
+
                 this.refreshBoard();
+
               }
+
             } else {
+
               this._startProgressEdit(taskIdOrNull, idx, renderHistory);
+
             }
+
           });
+
         });
+
       };
 
       $progressToggle.addEventListener('click', () => {
+
         progressExpanded = !progressExpanded;
+
         if (progressExpanded) { $progressBody.classList.add('show'); $progressToggle.classList.add('expanded'); }
+
         else { $progressBody.classList.remove('show'); $progressToggle.classList.remove('expanded'); }
+
       });
 
       const addProgress = () => {
+
         const text = $progressInput.value.trim();
+
         if (!text) return;
+
         this.tm.addProgress(taskIdOrNull, text);
+
         $progressInput.value = '';
+
         renderHistory();
+
         this.refreshBoard();
+
       };
 
       $btnProgressAdd.addEventListener('click', addProgress);
+
       $progressInput.addEventListener('keydown', (e) => {
+
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addProgress(); }
+
       });
 
       renderHistory();
+
     }
 
     const closeModal = () => { this.$modalContainer.innerHTML = ''; };
 
     $overlay.addEventListener('click', (e) => { if (e.target === $overlay) closeModal(); });
+
     document.getElementById('btnModalCancel').addEventListener('click', closeModal);
 
     document.getElementById('btnModalSave').addEventListener('click', () => {
+
       const title = $inputTitle.value.trim();
+
       if (!title) { this.showToast('⚠️ 请输入任务标题'); $inputTitle.focus(); return; }
+
       const taskData = {
+
         title, description: $inputDesc.value.trim(), dueDate: $inputDueDate.value,
+
         priority: $inputPriority.value, status: $inputStatus.value, tags: currentTags
+
       };
+
       if (isEdit) { this.tm.update(taskIdOrNull, taskData); this.showToast('✅ 任务已更新'); }
+
       else { this.tm.add(taskData); this.showToast('✅ 任务已创建'); }
+
       closeModal();
+
       this.refreshAll();
+
     });
 
     const escHandler = (e) => {
+
       if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
+
     };
+
     document.addEventListener('keydown', escHandler);
+
     setTimeout(() => $inputTitle.focus(), 100);
+
   }
 
   _startProgressEdit(taskId, index, renderHistoryFn) {
+
     const $textEl = document.getElementById('progressText_' + index);
+
     if (!$textEl) return;
+
     const task = this.tm.getById(taskId);
+
     if (!task || !Array.isArray(task.progress) || index >= task.progress.length) return;
+
     const originalText = task.progress[index].text;
+
     $textEl.innerHTML = `
+
       <div style="display:flex;gap:6px;align-items:flex-start;">
+
         <textarea class="progress-edit-input" id="progressEditInput_${index}" rows="2" style="flex:1;padding:6px 10px;border:1px solid #7c8ce0;border-radius:6px;font-size:13px;font-family:inherit;color:var(--text-primary);outline:none;resize:none;">${this.escapeHtml(originalText)}</textarea>
+
         <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+
           <button class="progress-edit-save" data-idx="${index}" style="padding:4px 10px;background:#4f6ef7;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;">保存</button>
+
           <button class="progress-edit-cancel" data-idx="${index}" style="padding:4px 10px;background:#f3f4f6;color:var(--text-primary);border:1px solid #d1d5db;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap;">取消</button>
+
         </div>
+
       </div>
+
     `;
+
     const $editInput = document.getElementById('progressEditInput_' + index);
+
     if ($editInput) $editInput.focus();
+
     $textEl.querySelector('.progress-edit-save').addEventListener('click', (e) => {
+
       e.stopPropagation();
+
       const newText = $editInput ? $editInput.value.trim() : '';
+
       if (!newText) return;
+
       this.tm.updateProgress(taskId, index, newText);
+
       renderHistoryFn();
+
       this.refreshBoard();
+
     });
+
     $textEl.querySelector('.progress-edit-cancel').addEventListener('click', (e) => { e.stopPropagation(); renderHistoryFn(); });
+
     if ($editInput) {
+
       $editInput.addEventListener('keydown', (e) => {
+
         if (e.key === 'Enter' && !e.shiftKey) {
+
           e.preventDefault();
+
           const newText = $editInput.value.trim();
+
           if (!newText) return;
+
           this.tm.updateProgress(taskId, index, newText);
+
           renderHistoryFn();
+
           this.refreshBoard();
+
         }
+
       });
+
     }
+
   }
 
   showToast(msg) {
+
     const toast = document.createElement('div');
+
     toast.className = 'toast';
+
     toast.textContent = msg;
+
     this.$toastContainer.appendChild(toast);
+
     setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2000);
+
   }
+
 }
 
 /* ============================
+
  * DailyTodoStorage — 每日待办数据存储
+
  * ============================ */
+
 class DailyTodoStorage {
+
   constructor() {
+
     this._key = 'daily-todo-data';
+
   }
 
   loadAll() {
+
     try {
+
       const raw = localStorage.getItem(this._key);
+
       return raw ? JSON.parse(raw) : {};
+
     } catch (e) {
+
       console.warn('每日待办数据读取失败', e);
+
       return {};
+
     }
+
   }
 
   saveAll(data) {
+
     try {
+
       localStorage.setItem(this._key, JSON.stringify(data));
+
     } catch (e) {
+
       console.error('每日待办数据写入失败', e);
+
     }
+
   }
 
   getDate(dateStr) {
+
     const all = this.loadAll();
+
     return all[dateStr] || null;
+
   }
 
   setDate(dateStr, dayData) {
+
     const all = this.loadAll();
+
     all[dateStr] = dayData;
+
     this.saveAll(all);
+
   }
 
   deleteDate(dateStr) {
+
     const all = this.loadAll();
+
     delete all[dateStr];
+
     this.saveAll(all);
+
   }
 
   hasDate(dateStr) {
+
     const all = this.loadAll();
+
     return !!all[dateStr];
+
   }
 
   getAllDates() {
+
     const all = this.loadAll();
+
     return Object.keys(all).sort();
+
   }
+
 }
 
 /* ============================
+
  * DailyTodoManager — 每日待办数据管理层
+
  * ============================ */
+
 class DailyTodoManager {
+
   constructor(storage) {
+
     this._storage = storage;
+
   }
 
   _todayStr() {
+
     const d = new Date();
+
     const pad = (n) => String(n).padStart(2, '0');
+
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
   }
 
   getTodayItems() {
+
     const today = this._todayStr();
+
     const dateData = this._storage.getDate(today);
+
     return dateData ? dateData.items : null;
+
   }
 
   hasTodayList() {
+
     return this._storage.hasDate(this._todayStr());
+
   }
 
   createTodayList() {
+
     const today = this._todayStr();
+
     if (this._storage.hasDate(today)) return false;
+
     this._storage.setDate(today, { items: [] });
+
     return true;
+
   }
 
   getItemsForDate(dateStr) {
+
     const dateData = this._storage.getDate(dateStr);
+
     return dateData ? dateData.items : null;
+
   }
 
   hasDate(dateStr) {
+
     return this._storage.hasDate(dateStr);
+
   }
 
   addItem(dateStr, title, priority) {
+
     const dateData = this._storage.getDate(dateStr);
+
     if (!dateData) return null;
+
     const item = {
+
       id: crypto.randomUUID(),
+
       title: title.trim(),
+
       priority: priority || 'medium',
+
       completed: false,
+
       createdAt: Date.now()
+
     };
+
     dateData.items.push(item);
+
     this._storage.setDate(dateStr, dateData);
+
     return item;
+
   }
 
   updateItem(dateStr, itemId, updates) {
+
     const dateData = this._storage.getDate(dateStr);
+
     if (!dateData) return false;
+
     const idx = dateData.items.findIndex(item => item.id === itemId);
+
     if (idx === -1) return false;
+
     dateData.items[idx] = { ...dateData.items[idx], ...updates };
+
     this._storage.setDate(dateStr, dateData);
+
     return true;
+
   }
 
   deleteItem(dateStr, itemId) {
+
     const dateData = this._storage.getDate(dateStr);
+
     if (!dateData) return false;
+
     const idx = dateData.items.findIndex(item => item.id === itemId);
+
     if (idx === -1) return false;
+
     dateData.items.splice(idx, 1);
+
     this._storage.setDate(dateStr, dateData);
+
     return true;
+
   }
 
   toggleItem(dateStr, itemId) {
+
     const dateData = this._storage.getDate(dateStr);
+
     if (!dateData) return false;
+
     const item = dateData.items.find(item => item.id === itemId);
+
     if (!item) return false;
+
     item.completed = !item.completed;
+
     this._storage.setDate(dateStr, dateData);
+
     return true;
+
   }
+
 }
 
 /* ============================
+
  * DailyTodoUI — 每日待办UI渲染与交互
+
  * ============================ */
+
 class DailyTodoUI {
+
   constructor(dailyManager) {
+
     this._dm = dailyManager;
+
     this._currentDate = this._todayStr();
+
     this._isCalendarView = false;
+
     this._calendarYear = null;
+
     this._calendarMonth = null;
+
     this._addFormVisible = false;
 
     this._cacheDom();
+
     this._bindEvents();
+
   }
 
   _todayStr() {
+
     const d = new Date();
+
     const pad = (n) => String(n).padStart(2, '0');
+
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
   }
 
   _cacheDom() {
+
     this.$overlay = document.getElementById('dailyOverlay');
+
     this.$sidebar = document.getElementById('dailySidebar');
+
     this.$btnDailyTodo = document.getElementById('btnDailyTodo');
+
     this.$sidebarClose = document.getElementById('dailySidebarClose');
+
     this.$dateTitle = document.getElementById('dailyDateTitle');
+
     this.$dateWeekday = document.getElementById('dailyDateWeekday');
+
     this.$goCalendar = document.getElementById('dailyGoCalendar');
+
     this.$todayView = document.getElementById('dailyTodayView');
+
     this.$calendarView = document.getElementById('dailyCalendarView');
+
     this.$dailyBody = document.getElementById('dailyBody');
+
     this.$emptyHint = document.getElementById('dailyEmptyHint');
+
     this.$createBtn = document.getElementById('dailyCreateBtn');
+
     this.$itemList = document.getElementById('dailyItemList');
+
     this.$addItemBtn = document.getElementById('dailyAddItemBtn');
+
     this.$addFormContainer = document.getElementById('dailyAddFormContainer');
+
     this.$calendarMonth = document.getElementById('dailyCalendarMonth');
+
     this.$calendarGrid = document.getElementById('dailyCalendarGrid');
+
     this.$calendarPrev = document.getElementById('dailyCalendarPrev');
+
     this.$calendarNext = document.getElementById('dailyCalendarNext');
+
     this.$backToday = document.getElementById('dailyBackToday');
+
   }
 
   _bindEvents() {
+
     this.$btnDailyTodo.addEventListener('click', () => this.open());
+
     this.$sidebarClose.addEventListener('click', () => this.close());
+
     this.$overlay.addEventListener('click', () => this.close());
+
     this.$goCalendar.addEventListener('click', () => this._showCalendarView());
+
     this.$backToday.addEventListener('click', () => this._showTodayView());
+
     this.$createBtn.addEventListener('click', () => this._createTodayList());
+
     this.$addItemBtn.addEventListener('click', () => this._toggleAddForm());
+
     this.$calendarPrev.addEventListener('click', () => this._navigateMonth(-1));
+
     this.$calendarNext.addEventListener('click', () => this._navigateMonth(1));
 
     document.addEventListener('keydown', (e) => {
+
       if (e.key === 'Escape' && this.$sidebar.classList.contains('open')) {
+
         this.close();
+
       }
+
     });
+
   }
 
   open() {
+
     this._currentDate = this._todayStr();
+
     this._isCalendarView = false;
+
     this._showTodayView();
+
     this.$overlay.classList.add('show');
+
     this.$sidebar.classList.add('open');
+
   }
 
   close() {
+
     this.$overlay.classList.remove('show');
+
     this.$sidebar.classList.remove('open');
+
     this._addFormVisible = false;
+
     this.$addFormContainer.innerHTML = '';
+
   }
 
   _showTodayView() {
+
     this._isCalendarView = false;
+
     this._currentDate = this._todayStr();
+
     this.$todayView.style.display = '';
+
     this.$calendarView.style.display = 'none';
+
     this._updateDateDisplay();
+
     this._renderToday();
+
   }
 
   _showCalendarView() {
+
     this._isCalendarView = true;
+
     this.$todayView.style.display = 'none';
+
     this.$calendarView.style.display = '';
+
     this._updateDateDisplay();
+
     const todayDate = new Date();
+
     this._calendarYear = todayDate.getFullYear();
+
     this._calendarMonth = todayDate.getMonth();
+
     this._renderCalendar();
+
   }
 
   _updateDateDisplay() {
+
     const d = new Date(this._currentDate + 'T00:00:00');
+
     const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
     this.$dateTitle.textContent = '📅 ' + this._currentDate;
+
     this.$dateWeekday.textContent = weekdays[d.getDay()];
+
   }
 
   _createTodayList() {
+
     this._dm.createTodayList();
+
     this._renderToday();
+
   }
 
   _renderToday() {
+
     const items = this._dm.getItemsForDate(this._currentDate);
+
     const hasList = items !== null;
+
     this._addFormVisible = false;
+
     this.$addFormContainer.innerHTML = '';
 
     if (!hasList) {
+
       this.$emptyHint.style.display = '';
+
       this.$createBtn.style.display = '';
+
       this.$itemList.innerHTML = '';
+
       this.$addItemBtn.style.display = 'none';
+
       return;
+
     }
+
     this.$emptyHint.style.display = 'none';
+
     this.$createBtn.style.display = 'none';
+
     this.$addItemBtn.style.display = '';
+
     this._renderItems(items);
+
   }
 
   _renderItems(items) {
+
     this.$itemList.innerHTML = '';
+
     if (!items || items.length === 0) {
+
       this.$itemList.innerHTML = '<div class="daily-empty" style="padding:20px;"><span class="daily-empty-icon">📋</span>暂无待办项，点击下方按钮添加</div>';
+
       return;
+
     }
+
     items.forEach(item => {
+
       const li = document.createElement('li');
+
       li.className = 'daily-item-card' + (item.completed ? ' completed' : '');
+
       li.dataset.itemId = item.id;
+
       const priorityEmoji = { high: '🔴', medium: '🟡', low: '🟢' };
+
       li.innerHTML = `
+
         <input type="checkbox" class="daily-item-check" ${item.completed ? 'checked' : ''}>
+
         <div class="daily-item-content">
+
           <span class="daily-item-title">${this._escape(item.title)}</span>
+
           <span class="daily-item-priority">${priorityEmoji[item.priority] || '🟡'}</span>
+
         </div>
+
         <button class="daily-item-delete" title="删除此待办">×</button>
+
       `;
 
       // 勾选切换
+
       li.querySelector('.daily-item-check').addEventListener('change', (e) => {
+
         e.stopPropagation();
+
         this._dm.toggleItem(this._currentDate, item.id);
+
         this._renderToday();
+
       });
 
       // 删除
+
       li.querySelector('.daily-item-delete').addEventListener('click', (e) => {
+
         e.stopPropagation();
+
         if (confirm('确定要删除这条待办吗？')) {
+
           this._dm.deleteItem(this._currentDate, item.id);
+
           this._renderToday();
+
         }
+
       });
 
       // 双击编辑标题
+
       li.addEventListener('dblclick', (e) => {
+
         e.stopPropagation();
+
         this._startEditTitle(item, li);
+
       });
 
       this.$itemList.appendChild(li);
+
     });
+
   }
 
   _startEditTitle(item, liElement) {
+
     const titleEl = liElement.querySelector('.daily-item-title');
+
     if (!titleEl) return;
+
     const originalTitle = item.title;
+
     const $input = document.createElement('input');
+
     $input.type = 'text';
+
     $input.className = 'daily-item-edit-input';
+
     $input.value = originalTitle;
+
     $input.style.flex = '1';
+
     titleEl.replaceWith($input);
+
     $input.focus();
+
     $input.select();
 
     const saveEdit = () => {
+
       const newTitle = $input.value.trim();
+
       if (newTitle && newTitle !== originalTitle) {
+
         this._dm.updateItem(this._currentDate, item.id, { title: newTitle });
+
         this._renderToday();
+
       } else {
+
         $input.replaceWith(titleEl);
+
       }
+
     };
 
     $input.addEventListener('blur', saveEdit);
+
     $input.addEventListener('keydown', (e) => {
+
       if (e.key === 'Enter') { e.preventDefault(); $input.blur(); }
+
       else if (e.key === 'Escape') { $input.value = originalTitle; $input.blur(); }
+
     });
+
   }
 
   _toggleAddForm() {
+
     if (this._addFormVisible) {
+
       this._addFormVisible = false;
+
       this.$addFormContainer.innerHTML = '';
+
       return;
+
     }
+
     this._addFormVisible = true;
+
     this.$addFormContainer.innerHTML = `
+
       <div class="daily-add-form">
+
         <input type="text" id="dailyAddInput" placeholder="输入待办标题" autofocus>
+
         <select id="dailyAddPriority">
+
           <option value="high">🔴 高</option>
+
           <option value="medium" selected>🟡 中</option>
+
           <option value="low">🟢 低</option>
+
         </select>
+
         <button class="btn-confirm" id="dailyAddConfirm">添加</button>
+
         <button class="btn-cancel" id="dailyAddCancel">取消</button>
+
       </div>
+
     `;
 
     const $input = document.getElementById('dailyAddInput');
+
     const $priority = document.getElementById('dailyAddPriority');
+
     const $confirm = document.getElementById('dailyAddConfirm');
+
     const $cancel = document.getElementById('dailyAddCancel');
 
     const doAdd = () => {
+
       const title = $input.value.trim();
+
       if (!title) { $input.focus(); return; }
+
       this._dm.addItem(this._currentDate, title, $priority.value);
+
       this._renderToday();
+
     };
 
     $confirm.addEventListener('click', doAdd);
+
     $cancel.addEventListener('click', () => { this._addFormVisible = false; this.$addFormContainer.innerHTML = ''; this._renderToday(); });
+
     $input.addEventListener('keydown', (e) => {
+
       if (e.key === 'Enter') { e.preventDefault(); doAdd(); }
+
       else if (e.key === 'Escape') { this._addFormVisible = false; this.$addFormContainer.innerHTML = ''; this._renderToday(); }
+
     });
 
     setTimeout(() => $input.focus(), 100);
+
   }
 
   /* ---------- 日历视图 ---------- */
+
   _renderCalendar() {
+
     if (this._calendarYear === null || this._calendarMonth === null) return;
+
     const year = this._calendarYear;
+
     const month = this._calendarMonth;
+
     const allDates = this._dm._storage.getAllDates();
+
     const todayStr = this._todayStr();
 
     this.$calendarMonth.textContent = `${year}年 ${month + 1}月`;
 
     let html = '';
+
     const headers = ['日', '一', '二', '三', '四', '五', '六'];
+
     headers.forEach(h => { html += `<div class="daily-calendar-day-header">${h}</div>`; });
 
     const firstDay = new Date(year, month, 1).getDay();
+
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+
     const prevMonthDays = new Date(year, month, 0).getDate();
 
     // 上个月填充
+
     for (let i = firstDay - 1; i >= 0; i--) {
+
       html += `<div class="daily-calendar-cell other-month">${prevMonthDays - i}</div>`;
+
     }
 
     // 当月日期
+
     for (let day = 1; day <= daysInMonth; day++) {
+
       const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
       const hasData = allDates.includes(dateStr);
+
       const isToday = dateStr === todayStr;
+
       const cellClass = ['daily-calendar-cell'];
+
       if (hasData) cellClass.push('has-data');
+
       if (isToday) cellClass.push('today');
+
       html += `<div class="${cellClass.join(' ')}" data-date="${dateStr}">${day}</div>`;
+
     }
 
     // 下个月填充
+
     const totalCells = firstDay + daysInMonth;
+
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
     for (let i = 1; i <= remaining; i++) {
+
       html += `<div class="daily-calendar-cell other-month">${i}</div>`;
+
     }
 
     this.$calendarGrid.innerHTML = html;
 
     // 绑定日期点击事件
+
     this.$calendarGrid.querySelectorAll('.has-data').forEach(cell => {
+
       cell.addEventListener('click', () => {
+
         const dateStr = cell.dataset.date;
+
         if (dateStr) this._goToDate(dateStr);
+
       });
+
     });
+
   }
 
   _navigateMonth(delta) {
+
     if (this._calendarMonth === null) return;
+
     this._calendarMonth += delta;
+
     if (this._calendarMonth < 0) { this._calendarMonth = 11; this._calendarYear--; }
+
     else if (this._calendarMonth > 11) { this._calendarMonth = 0; this._calendarYear++; }
+
     this._renderCalendar();
+
   }
 
   _goToDate(dateStr) {
+
     this._currentDate = dateStr;
+
     this._isCalendarView = false;
+
     this.$todayView.style.display = '';
+
     this.$calendarView.style.display = 'none';
+
     this._updateDateDisplay();
+
     this._renderToday();
+
   }
 
   _escape(str) {
+
     const div = document.createElement('div');
+
     div.textContent = str;
+
     return div.innerHTML;
+
   }
+
 }
 
 /* ============================
- * 应用初始化（异步）
+
+ * LeftSidebarManager — 左侧工具栏管理
+
  * ============================ */
+
+class LeftSidebarManager {
+
+  constructor() {
+
+    this._key = 'left-sidebar-state';
+
+    this._sidebar = document.getElementById('leftSidebar');
+
+    this._icons = this._sidebar.querySelectorAll('.sidebar-icon-btn');
+
+    this._panels = {
+
+      timer: document.getElementById('panel-timer'),
+
+      countdown: document.getElementById('panel-countdown'),
+
+      calc: document.getElementById('panel-calc'),
+
+      theme: document.getElementById('panel-theme')
+
+    };
+
+    this._activeTool = 'timer';
+
+    this._expanded = false;
+
+    this._restoreState();
+
+    this._bindEvents();
+
+  }
+
+  _restoreState() {
+
+    try {
+
+      const raw = localStorage.getItem(this._key);
+
+      if (raw) {
+
+        const state = JSON.parse(raw);
+
+        if (state.expanded) this._expand();
+
+        if (state.tool) this._switchPanel(state.tool);
+
+      }
+
+    } catch(e) {}
+
+  }
+
+  _saveState() {
+
+    try {
+
+      localStorage.setItem(this._key, JSON.stringify({ expanded: this._expanded, tool: this._activeTool }));
+
+    } catch(e) {}
+
+  }
+
+  _bindEvents() {
+
+    this._icons.forEach(btn => {
+
+      btn.addEventListener('click', () => {
+
+        const tool = btn.dataset.tool;
+
+        if (this._expanded && this._activeTool === tool) {
+
+          this._collapse();
+
+        } else {
+
+          this._switchPanel(tool);
+
+          if (!this._expanded) this._expand();
+
+        }
+
+      });
+
+    });
+
+  }
+
+  _expand() {
+
+    this._expanded = true;
+
+    this._sidebar.classList.add('expanded');
+
+    document.body.classList.add('left-sidebar-expanded');
+
+    this._saveState();
+
+  }
+
+  _collapse() {
+
+    this._expanded = false;
+
+    this._sidebar.classList.remove('expanded');
+
+    document.body.classList.remove('left-sidebar-expanded');
+
+    this._saveState();
+
+  }
+
+  _switchPanel(tool) {
+
+    this._activeTool = tool;
+
+    this._icons.forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
+
+    Object.entries(this._panels).forEach(([key, el]) => { if (el) el.style.display = key === tool ? '' : 'none'; });
+
+    this._saveState();
+
+  }
+
+}
+
+/* ============================
+
+ * TimerModule — 计时器模块
+
+ * ============================ */
+
+class TimerModule {
+
+  constructor() {
+
+    this._mode = 'countdown'; // 'countdown' | 'stopwatch'
+
+    this._running = false;
+
+    this._interval = null;
+
+    this._remaining = 0; // seconds for countdown
+
+    this._elapsed = 0; // seconds for stopwatch
+
+    this._cacheDom();
+
+    this._bindEvents();
+
+    this._updateDisplay();
+
+  }
+
+  _cacheDom() {
+
+    this.$display = document.getElementById('timerDisplay');
+
+    this.$inputs = document.getElementById('timerInputs');
+
+    this.$h = document.getElementById('timerH');
+
+    this.$m = document.getElementById('timerM');
+
+    this.$s = document.getElementById('timerS');
+
+    this.$start = document.getElementById('timerStart');
+
+    this.$pause = document.getElementById('timerPause');
+
+    this.$reset = document.getElementById('timerReset');
+
+    this._modeBtns = document.querySelectorAll('.timer-mode-btn');
+
+  }
+
+  _bindEvents() {
+
+    this._modeBtns.forEach(btn => {
+
+      btn.addEventListener('click', () => {
+
+        this._modeBtns.forEach(b => b.classList.remove('active'));
+
+        btn.classList.add('active');
+
+        this._mode = btn.dataset.mode;
+
+        this._stop();
+
+        this._remaining = 0;
+
+        this._elapsed = 0;
+
+        this.$inputs.style.display = this._mode === 'countdown' ? '' : 'none';
+
+        if (this._mode === 'countdown') this._readInputs();
+
+        this._updateDisplay();
+
+      });
+
+    });
+
+    this.$start.addEventListener('click', () => this._start());
+
+    this.$pause.addEventListener('click', () => this._pause());
+
+    this.$reset.addEventListener('click', () => this._reset());
+
+    [this.$h, this.$m, this.$s].forEach(inp => {
+
+      inp.addEventListener('change', () => { if (this._mode === 'countdown' && !this._running) this._readInputs(); this._updateDisplay(); });
+
+    });
+
+  }
+
+  _readInputs() {
+
+    const h = parseInt(this.$h.value) || 0;
+
+    const m = parseInt(this.$m.value) || 0;
+
+    const s = parseInt(this.$s.value) || 0;
+
+    this._remaining = h * 3600 + m * 60 + s;
+
+  }
+
+  _start() {
+
+    if (this._running) return;
+
+    if (this._mode === 'countdown') {
+
+      this._readInputs();
+
+      if (this._remaining <= 0) return;
+
+    }
+
+    this._running = true;
+
+    this.$start.style.display = 'none';
+
+    this.$pause.style.display = '';
+
+    this._interval = setInterval(() => {
+
+      if (this._mode === 'countdown') {
+
+        this._remaining--;
+
+        if (this._remaining <= 0) {
+
+          this._remaining = 0;
+
+          this._stop();
+
+          this._notify();
+
+        }
+
+      } else {
+
+        this._elapsed++;
+
+      }
+
+      this._updateDisplay();
+
+    }, 1000);
+
+  }
+
+  _pause() {
+
+    this._stop();
+
+  }
+
+  _stop() {
+
+    this._running = false;
+
+    if (this._interval) { clearInterval(this._interval); this._interval = null; }
+
+    this.$start.style.display = '';
+
+    this.$pause.style.display = 'none';
+
+  }
+
+  _reset() {
+
+    this._stop();
+
+    this._remaining = 0;
+
+    this._elapsed = 0;
+
+    if (this._mode === 'countdown') this._readInputs();
+
+    this._updateDisplay();
+
+  }
+
+  _formatTime(totalSec) {
+
+    const h = Math.floor(totalSec / 3600);
+
+    const m = Math.floor((totalSec % 3600) / 60);
+
+    const s = totalSec % 60;
+
+    return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+
+  }
+
+  _updateDisplay() {
+
+    const sec = this._mode === 'countdown' ? this._remaining : this._elapsed;
+
+    this.$display.textContent = this._formatTime(sec);
+
+  }
+
+  _notify() {
+
+    if (Notification.permission === 'granted') {
+
+      new Notification('⏱️ 倒计时结束！', { body: '计时器已归零' });
+
+    } else if (Notification.permission !== 'denied') {
+
+      Notification.requestPermission().then(p => {
+
+        if (p === 'granted') new Notification('⏱️ 倒计时结束！', { body: '计时器已归零' });
+
+      });
+
+    }
+
+    if (window.__app && window.__app.uiManager) window.__app.uiManager.showToast('⏱️ 倒计时结束！');
+
+  }
+
+}
+
+/* ============================
+
+ * CountdownDaysModule — 倒数日模块
+
+ * ============================ */
+
+class CountdownDaysModule {
+
+  constructor(taskManager) {
+
+    this._tm = taskManager;
+
+    this._key = 'left-sidebar-countdown';
+
+    this._items = this._load();
+
+    this._cacheDom();
+
+    this._bindEvents();
+
+    this.render();
+
+  }
+
+  _cacheDom() {
+
+    this.$name = document.getElementById('cdName');
+
+    this.$date = document.getElementById('cdDate');
+
+    this.$addBtn = document.getElementById('cdAddBtn');
+
+    this.$manualList = document.getElementById('cdManualList');
+
+    this.$taskList = document.getElementById('cdTaskList');
+
+  }
+
+  _bindEvents() {
+
+    this.$addBtn.addEventListener('click', () => this._add());
+
+    this.$name.addEventListener('keydown', e => { if (e.key === 'Enter') this._add(); });
+
+  }
+
+  _load() {
+
+    try { return JSON.parse(localStorage.getItem(this._key)) || []; } catch(e) { return []; }
+
+  }
+
+  _save() {
+
+    try { localStorage.setItem(this._key, JSON.stringify(this._items)); } catch(e) {}
+
+  }
+
+  _add() {
+
+    const name = this.$name.value.trim();
+
+    const date = this.$date.value;
+
+    if (!name || !date) return;
+
+    this._items.push({ id: crypto.randomUUID(), name, date });
+
+    this._save();
+
+    this.$name.value = '';
+
+    this.$date.value = '';
+
+    this.render();
+
+  }
+
+  _remove(id) {
+
+    this._items = this._items.filter(i => i.id !== id);
+
+    this._save();
+
+    this.render();
+
+  }
+
+  _calcDays(dateStr) {
+
+    const target = new Date(dateStr + 'T00:00:00');
+
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    return Math.ceil((target - today) / 86400000);
+
+  }
+
+  render() {
+
+    // 手动添加的
+
+    this.$manualList.innerHTML = '';
+
+    if (this._items.length === 0) {
+
+      this.$manualList.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:12px;">暂无手动添加的倒数日</div>';
+
+    } else {
+
+      this._items.forEach(item => {
+
+        const days = this._calcDays(item.date);
+
+        const isPast = days < 0;
+
+        const absDays = Math.abs(days);
+
+        const label = isPast ? `${absDays}天前` : days === 0 ? '今天' : `还有${days}天`;
+
+        this.$manualList.innerHTML += `<div class="countdown-item"><span class="cd-name">${this._esc(item.name)}</span><span class="cd-days ${isPast ? 'past' : ''}">${label}</span><span class="cd-date">${item.date}</span><button class="cd-delete" data-id="${item.id}">×</button></div>`;
+
+      });
+
+      this.$manualList.querySelectorAll('.cd-delete').forEach(btn => {
+
+        btn.addEventListener('click', () => this._remove(btn.dataset.id));
+
+      });
+
+    }
+
+    // 从任务中读取截止日期
+
+    this.$taskList.innerHTML = '';
+
+    const tasks = this._tm.getAll().filter(t => t.dueDate && t.status !== 'done');
+
+    if (tasks.length === 0) {
+
+      this.$taskList.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:12px;">暂无带截止日期的未完成任务</div>';
+
+    } else {
+
+      tasks.sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).forEach(t => {
+
+        const days = this._calcDays(t.dueDate);
+
+        const isPast = days < 0;
+
+        const absDays = Math.abs(days);
+
+        const label = isPast ? `${absDays}天前` : days === 0 ? '今天' : `还有${days}天`;
+
+        this.$taskList.innerHTML += `<div class="countdown-item"><span class="cd-name">${this._esc(t.title)}</span><span class="cd-days ${isPast ? 'past' : ''}">${label}</span><span class="cd-date">${t.dueDate}</span></div>`;
+
+      });
+
+    }
+
+  }
+
+  _esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+}
+
+/* ============================
+
+ * CalculatorModule — 多功能计算器模块
+
+ * ============================ */
+
+class CalculatorModule {
+
+  constructor() {
+
+    this._cacheDom();
+
+    this._bindCalcTabs();
+
+    this._bindBasicCalc();
+
+    this._bindFx();
+
+    this._bindUnit();
+
+  }
+
+  _cacheDom() {
+
+    this._calcTabs = document.querySelectorAll('.calc-tab');
+
+    this._calcPanels = { basic: document.getElementById('calcBasic'), fx: document.getElementById('calcFx'), unit: document.getElementById('calcUnit') };
+
+    this.$calcExpr = document.getElementById('calcExpr');
+
+    this.$calcResult = document.getElementById('calcResult');
+
+    this.$fxFrom = document.getElementById('fxFrom');
+
+    this.$fxTo = document.getElementById('fxTo');
+
+    this.$fxAmount = document.getElementById('fxAmount');
+
+    this.$fxResult = document.getElementById('fxResult');
+
+    this.$fxSwap = document.getElementById('fxSwap');
+
+    this.$unitCat = document.getElementById('unitCat');
+
+    this.$unitFrom = document.getElementById('unitFrom');
+
+    this.$unitTo = document.getElementById('unitTo');
+
+    this.$unitAmount = document.getElementById('unitAmount');
+
+    this.$unitResult = document.getElementById('unitResult');
+
+  }
+
+  _bindCalcTabs() {
+
+    this._calcTabs.forEach(tab => {
+
+      tab.addEventListener('click', () => {
+
+        this._calcTabs.forEach(t => t.classList.remove('active'));
+
+        tab.classList.add('active');
+
+        Object.values(this._calcPanels).forEach(p => p.classList.remove('active'));
+
+        this._calcPanels[tab.dataset.calc].classList.add('active');
+
+      });
+
+    });
+
+  }
+
+  // ---- 基础计算器 ----
+
+  _bindBasicCalc() {
+
+    this._calcCurrent = '0';
+
+    this._calcPrev = '';
+
+    this._calcOp = '';
+
+    this._calcNew = true;
+
+    document.querySelectorAll('#calcBasic .calc-btn').forEach(btn => {
+
+      btn.addEventListener('click', () => this._calcPress(btn.dataset.val));
+
+    });
+
+  }
+
+  _calcPress(val) {
+
+    if (val === 'C') { this._calcCurrent = '0'; this._calcPrev = ''; this._calcOp = ''; this._calcNew = true; }
+
+    else if (val === '±') { this._calcCurrent = String(-parseFloat(this._calcCurrent)); }
+
+    else if (val === '%') { this._calcCurrent = String(parseFloat(this._calcCurrent) / 100); }
+
+    else if (['+','-','×','÷'].includes(val)) {
+
+      if (this._calcPrev && this._calcOp && !this._calcNew) this._calcEval();
+
+      this._calcPrev = this._calcCurrent;
+
+      this._calcOp = val;
+
+      this._calcNew = true;
+
+    }
+
+    else if (val === '=') { this._calcEval(); this._calcOp = ''; this._calcPrev = ''; }
+
+    else if (val === '.') { if (!this._calcCurrent.includes('.')) this._calcCurrent += '.'; this._calcNew = false; }
+
+    else { // digits
+
+      if (this._calcNew) { this._calcCurrent = val; this._calcNew = false; }
+
+      else this._calcCurrent += val;
+
+    }
+
+    this.$calcExpr.textContent = this._calcPrev ? `${this._calcPrev} ${this._calcOp}` : '';
+
+    this.$calcResult.textContent = this._calcCurrent;
+
+  }
+
+  _calcEval() {
+
+    if (!this._calcPrev || !this._calcOp) return;
+
+    const a = parseFloat(this._calcPrev), b = parseFloat(this._calcCurrent);
+
+    let r = 0;
+
+    if (this._calcOp === '+') r = a + b;
+
+    else if (this._calcOp === '-') r = a - b;
+
+    else if (this._calcOp === '×') r = a * b;
+
+    else if (this._calcOp === '÷') r = b !== 0 ? a / b : 'Error';
+
+    this._calcCurrent = typeof r === 'number' ? String(Math.round(r * 1e10) / 1e10) : r;
+
+    this._calcNew = true;
+
+  }
+
+  // ---- 汇率 ----
+
+  _bindFx() {
+
+    // 近似汇率（相对 USD）
+
+    this._fxRates = { USD: 1, CNY: 7.25, EUR: 0.92, JPY: 155.5, GBP: 0.79 };
+
+    const calc = () => {
+
+      const amt = parseFloat(this.$fxAmount.value);
+
+      if (isNaN(amt)) { this.$fxResult.textContent = '—'; return; }
+
+      const from = this.$fxFrom.value, to = this.$fxTo.value;
+
+      const usd = amt / this._fxRates[from];
+
+      const result = usd * this._fxRates[to];
+
+      this.$fxResult.textContent = `${amt} ${from} ≈ ${result.toFixed(2)} ${to}`;
+
+    };
+
+    this.$fxAmount.addEventListener('input', calc);
+
+    this.$fxFrom.addEventListener('change', calc);
+
+    this.$fxTo.addEventListener('change', calc);
+
+    this.$fxSwap.addEventListener('click', () => {
+
+      const tmp = this.$fxFrom.value;
+
+      this.$fxFrom.value = this.$fxTo.value;
+
+      this.$fxTo.value = tmp;
+
+      calc();
+
+    });
+
+    calc();
+
+  }
+
+  // ---- 单位换算 ----
+
+  _bindUnit() {
+
+    this._units = {
+
+      length: {
+
+        label: '长度',
+
+        units: { '寸': 0.0333, '英寸': 0.0254, '厘米': 0.01, '米': 1 }
+
+      },
+
+      weight: {
+
+        label: '重量',
+
+        units: { '克': 0.001, '千克': 1, '磅': 0.4536, '盎司': 0.02835 }
+
+      },
+
+      area: {
+
+        label: '面积',
+
+        units: { '平方厘米': 0.0001, '平方米': 1, '亩': 666.67, '公顷': 10000 }
+
+      },
+
+      volume: {
+
+        label: '体积',
+
+        units: { '毫升': 0.001, '升': 1, '加仑': 3.7854, '立方厘米': 0.001 }
+
+      }
+
+    };
+
+    const fillUnits = () => {
+
+      const cat = this.$unitCat.value;
+
+      const units = Object.keys(this._units[cat].units);
+
+      this.$unitFrom.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+
+      this.$unitTo.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+
+      if (units.length > 1) this.$unitTo.selectedIndex = 1;
+
+      calcUnit();
+
+    };
+
+    const calcUnit = () => {
+
+      const amt = parseFloat(this.$unitAmount.value);
+
+      if (isNaN(amt)) { this.$unitResult.textContent = '—'; return; }
+
+      const cat = this._units[this.$unitCat.value];
+
+      const fromFactor = cat.units[this.$unitFrom.value];
+
+      const toFactor = cat.units[this.$unitTo.value];
+
+      const result = amt * fromFactor / toFactor;
+
+      this.$unitResult.textContent = `${amt} ${this.$unitFrom.value} = ${Math.round(result * 1e8) / 1e8} ${this.$unitTo.value}`;
+
+    };
+
+    this.$unitCat.addEventListener('change', fillUnits);
+
+    this.$unitFrom.addEventListener('change', calcUnit);
+
+    this.$unitTo.addEventListener('change', calcUnit);
+
+    this.$unitAmount.addEventListener('input', calcUnit);
+
+    fillUnits();
+
+  }
+
+}
+
+/* ============================
+
+ * ThemeModule — 主题换色模块
+
+ * ============================ */
+
+class ThemeModule {
+
+  constructor() {
+
+    this._key = 'left-sidebar-theme';
+
+    this._options = document.querySelectorAll('.theme-option');
+
+    this._bindEvents();
+
+    this._restore();
+
+  }
+
+  _bindEvents() {
+
+    this._options.forEach(opt => {
+
+      opt.addEventListener('click', () => {
+
+        this._options.forEach(o => o.classList.remove('active'));
+
+        opt.classList.add('active');
+
+        this._apply(opt.dataset.theme);
+
+      });
+
+    });
+
+  }
+
+  _apply(theme) {
+
+    document.body.classList.remove('theme-light-blue', 'theme-light-gray', 'theme-dark');
+
+    if (theme !== 'default') document.body.classList.add('theme-' + theme);
+
+    try { localStorage.setItem(this._key, theme); } catch(e) {}
+
+  }
+
+  _restore() {
+
+    try {
+
+      const saved = localStorage.getItem(this._key);
+
+      if (saved) {
+
+        this._options.forEach(o => o.classList.toggle('active', o.dataset.theme === saved));
+
+        this._apply(saved);
+
+      }
+
+    } catch(e) {}
+
+  }
+
+}
+
+/* ============================
+
+ * 应用初始化（异步）
+
+ * ============================ */
+
 (async function init() {
+
   try {
+
     const ds = new DataStorage();
+
     const taskManager = new TaskManager(ds);
+
     await taskManager.init();
+
     const uiManager = new UIManager(taskManager);
 
     // 初始化每日待办模块
+
     const dailyStorage = new DailyTodoStorage();
+
     const dailyManager = new DailyTodoManager(dailyStorage);
+
     const dailyUI = new DailyTodoUI(dailyManager);
 
-    window.__app = { ds, taskManager, uiManager, dailyStorage, dailyManager, dailyUI };
+    // 初始化左侧工具栏模块
+
+    const leftSidebar = new LeftSidebarManager();
+
+    const timer = new TimerModule();
+
+    const countdownDays = new CountdownDaysModule(taskManager);
+
+    const calculator = new CalculatorModule();
+
+    const theme = new ThemeModule();
+
+    window.__app = { ds, taskManager, uiManager, dailyStorage, dailyManager, dailyUI, leftSidebar, timer, countdownDays, calculator, theme };
+
     console.log('✅ 任务管理工具已就绪');
+
     console.log(`   - 共加载 ${taskManager.tasks.length} 个任务`);
+
     console.log(`   - 存储模式: ${ds.mode === 'fileSystem' ? '📁 文件系统 (' + ds.dirName + '/tasks.json)' : '💾 localStorage'}`);
+
   } catch (e) {
+
     console.error('初始化失败', e);
+
     document.body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#dc2626;">⚠️ 应用初始化失败，请刷新页面重试。<br><small>' + e.message + '</small></div>';
+
   }
+
 })();
+
 </script>
+
 </body>
+
 </html>
+
