@@ -6520,7 +6520,7 @@ class TimerModule {
 
     if (this._mode === 'countdown') {
 
-      this._readInputs();
+      if (this._remaining <= 0) this._readInputs();
 
       if (this._remaining <= 0) return;
 
