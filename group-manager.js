@@ -1,8 +1,9 @@
 'use strict';
 
 /* ============================
- * 卡片组管理模块（阶段三）
- * 包含：卡片组 CRUD、组内任务 CRUD（三列看板）、拖拽排序、模态框
+ * 卡片组管理模块（阶段四）
+ * 包含：卡片组 CRUD、组内任务 CRUD、拖拽排序、
+ *       右键菜单、复制卡片组、空组提示、事件委托
  * 依赖：app.js 中的 loadData(), updateDataField(), UIManager, TaskManager
  * ============================ */
 
@@ -98,6 +99,43 @@
     return group;
   };
 
+  // --- 阶段四新增：复制卡片组 ---
+
+  TaskManager.prototype.copyGroup = function(groupId) {
+    const groups = this.getGroups();
+    const original = groups.find(g => g.id === groupId);
+    if (!original) return null;
+
+    const newGroup = {
+      id: 'group_' + Date.now() + '_' + Math.random(),
+      title: original.title + ' - 副本',
+      status: original.status,
+      collapsed: false,
+      createdAt: new Date().toISOString(),
+      completedAt: null,
+      tasks: Array.isArray(original.tasks) ? original.tasks.map(t => ({
+        id: 'task_' + Date.now() + '_' + Math.random(),
+        title: t.title || '未命名任务',
+        desc: t.desc || '',
+        dueDate: t.dueDate || '',
+        priority: t.priority || 'medium',
+        tags: Array.isArray(t.tags) ? [...t.tags] : [],
+        status: t.status || 'active',
+        createdAt: new Date().toISOString()
+      })) : []
+    };
+
+    // 插入到原卡片组之后
+    const insertIdx = groups.findIndex(g => g.id === groupId);
+    if (insertIdx !== -1) {
+      groups.splice(insertIdx + 1, 0, newGroup);
+    } else {
+      groups.push(newGroup);
+    }
+    _updateDataField('groups', groups);
+    return newGroup;
+  };
+
   // --- TaskManager 扩展：组内任务 CRUD ---
 
   TaskManager.prototype.getGroupById = function(groupId) {
@@ -159,7 +197,6 @@
     task.status = targetStatus;
 
     if (insertBeforeId) {
-      // Insert before the target task
       const insertIdx = group.tasks.findIndex(t => t.id === insertBeforeId);
       if (insertIdx !== -1) {
         group.tasks.splice(insertIdx, 0, task);
@@ -167,7 +204,6 @@
         group.tasks.push(task);
       }
     } else {
-      // Append after the last task of the target status
       let lastIdx = -1;
       group.tasks.forEach((t, i) => { if ((t.status || 'active') === targetStatus) lastIdx = i; });
       if (lastIdx !== -1) {
@@ -181,6 +217,78 @@
     return true;
   };
 
+  // --- UIManager 扩展：卡片组右键菜单 ---
+
+  UIManager.prototype.showGroupContextMenu = function(x, y, groupId) {
+    this._groupContextMenuTargetId = groupId;
+    const menu = document.getElementById('groupContextMenu');
+    if (!menu) return;
+    menu.classList.add('show');
+    let left = x, top = y;
+    if (left + 180 > window.innerWidth) left = window.innerWidth - 190;
+    if (top + 240 > window.innerHeight) top = window.innerHeight - 250;
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+  };
+
+  UIManager.prototype.hideGroupContextMenu = function() {
+    this._groupContextMenuTargetId = null;
+    const menu = document.getElementById('groupContextMenu');
+    if (menu) menu.classList.remove('show');
+  };
+
+  UIManager.prototype.handleGroupContextAction = function(action, groupId) {
+    if (!groupId) return;
+    const group = this.tm.getGroupById(groupId);
+    if (!group) return;
+
+    switch (action) {
+      case 'group-edit': {
+        // 临时创建一个 DOM 元素用于内联编辑
+        const card = document.querySelector(`.group-card[data-group-id="${groupId}"]`);
+        if (card) {
+          const titleEl = card.querySelector('.group-card-title');
+          if (titleEl) this._startGroupTitleEdit(group, titleEl);
+        }
+        break;
+      }
+      case 'group-copy': {
+        const newGroup = this.tm.copyGroup(groupId);
+        if (newGroup) {
+          this.refreshBoard();
+          this.showToast('✅ 已复制卡片组');
+        }
+        break;
+      }
+      case 'group-move-todo': {
+        this.tm.updateGroup(groupId, { status: 'todo' });
+        this.refreshBoard();
+        this.showToast('卡片组已移至「待处理」');
+        break;
+      }
+      case 'group-move-progress': {
+        this.tm.updateGroup(groupId, { status: 'in-progress' });
+        this.refreshBoard();
+        this.showToast('卡片组已移至「进行中」');
+        break;
+      }
+      case 'group-move-done': {
+        this.tm.updateGroup(groupId, { status: 'done' });
+        this.refreshBoard();
+        this.showToast('卡片组已移至「已完成」');
+        break;
+      }
+      case 'group-delete': {
+        if (confirm('确定要删除卡片组「' + group.title + '」吗？')) {
+          this.tm.deleteGroup(groupId);
+          this.refreshBoard();
+          this.showToast('已删除卡片组');
+        }
+        break;
+      }
+    }
+  };
+
   // --- UIManager 扩展：卡片组渲染（三列纵向看板）---
 
   UIManager.prototype.createGroupElement = function(group) {
@@ -191,6 +299,12 @@
 
     const taskCount = (group.tasks && Array.isArray(group.tasks)) ? group.tasks.length : 0;
     const priorityLabels = { high: '🔴', medium: '🟡', low: '🟢' };
+
+    // 空卡片组提示
+    let bodyContent = '';
+    if (taskCount === 0 && !group.collapsed) {
+      bodyContent = '<div class="group-empty-hint">📭 暂无任务，点击下方按钮新增</div>';
+    }
 
     // Build three status rows
     let rowsHtml = '';
@@ -204,8 +318,7 @@
           if (t.dueDate) {
             const dueDate = new Date(t.dueDate + 'T00:00:00');
             const isOverdue = dueDate < today && t.status !== 'completed';
-            // 简短格式：MM-DD
-            const shortDate = t.dueDate.slice(5); // "2026-05-15" -> "05-15"
+            const shortDate = t.dueDate.slice(5);
             dueDateHtml = `<span class="group-task-due-date${isOverdue ? ' overdue' : ''}">📅 ${shortDate}${isOverdue ? ' (逾期)' : ''}</span>`;
           }
           return `
@@ -244,66 +357,69 @@
         <button class="group-card-delete" title="删除卡片组">🗑️</button>
       </div>
       <div class="group-card-body">
+        ${bodyContent}
         ${rowsHtml}
       </div>
     `;
 
-    // 300ms 延迟判断单击折叠 vs 双击编辑
-    let clickTimer = null;
-    card.querySelector('.group-card-header').addEventListener('click', (e) => {
-      if (e.target.closest('.group-card-delete')) return;
-      if (clickTimer) {
-        clearTimeout(clickTimer);
-        clickTimer = null;
-        this._startGroupTitleEdit(group, card.querySelector('.group-card-title'));
-      } else {
-        clickTimer = setTimeout(() => {
-          clickTimer = null;
-          this.tm.toggleGroupCollapse(group.id);
+    // 空卡片组：默认显示所有行（不折叠），空组提示已包含在 bodyContent 中
+
+    // --- 事件委托：在 group-card 上统一处理所有事件 ---
+    card.addEventListener('click', (e) => {
+      // 删除按钮
+      if (e.target.closest('.group-card-delete')) {
+        e.stopPropagation();
+        if (confirm('确定要删除卡片组「' + group.title + '」吗？')) {
+          this.tm.deleteGroup(group.id);
           this.refreshBoard();
-        }, 300);
+          this.showToast('已删除卡片组');
+        }
+        return;
       }
-    });
 
-    // 删除卡片组
-    card.querySelector('.group-card-delete').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (confirm('确定要删除卡片组「' + group.title + '」吗？')) {
-        this.tm.deleteGroup(group.id);
-        this.refreshBoard();
-        this.showToast('已删除卡片组');
+      // 新增组内任务按钮
+      const addBtn = e.target.closest('.btn-add-group-task');
+      if (addBtn) {
+        e.stopPropagation();
+        this.openGroupTaskModal(group.id, null, addBtn.dataset.status);
+        return;
       }
-    });
 
-    // 每行的 "+ 新增任务" 按钮
-    card.querySelectorAll('.btn-add-group-task').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      // 删除组内任务按钮
+      const deleteBtn = e.target.closest('.group-task-btn.delete');
+      if (deleteBtn) {
         e.stopPropagation();
-        const status = btn.dataset.status;
-        this.openGroupTaskModal(group.id, null, status);
-      });
-    });
-
-    // 组内任务点击编辑
-    card.querySelectorAll('.group-task-mini-card').forEach(item => {
-      item.addEventListener('click', (e) => {
-        if (e.target.closest('.group-task-btn.delete')) return;
-        this.openGroupTaskModal(group.id, item.dataset.taskId);
-      });
-    });
-
-    // 组内任务删除
-    card.querySelectorAll('.group-task-btn.delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const taskId = btn.dataset.taskId;
+        const taskId = deleteBtn.dataset.taskId;
         const task = (group.tasks || []).find(t => t.id === taskId);
         if (task && confirm('确定要删除任务「' + task.title + '」吗？')) {
           this.tm.deleteGroupTask(group.id, taskId);
           this.refreshBoard();
           this.showToast('已删除组内任务');
         }
-      });
+        return;
+      }
+
+      // 组内任务卡片点击（编辑）
+      const miniCard = e.target.closest('.group-task-mini-card');
+      if (miniCard) {
+        this.openGroupTaskModal(group.id, miniCard.dataset.taskId);
+        return;
+      }
+
+      // 折叠/展开（点击 header 区域，排除按钮）
+      const header = e.target.closest('.group-card-header');
+      if (header && !e.target.closest('.group-card-delete') && !e.target.closest('.btn-add-group-task')) {
+        this.tm.toggleGroupCollapse(group.id);
+        this.refreshBoard();
+      }
+    });
+
+    // 右键菜单
+    card.querySelector('.group-card-header').addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.hideContextMenu(); // 隐藏任务右键菜单
+      this.showGroupContextMenu(e.clientX, e.clientY, group.id);
     });
 
     // 组内任务拖拽
@@ -312,37 +428,38 @@
     return card;
   };
 
-  // --- 组内任务拖拽绑定 ---
+  // --- 组内任务拖拽绑定（事件委托优化）---
 
   UIManager.prototype._bindGroupTaskDragDrop = function(card, group) {
-    const miniCards = card.querySelectorAll('.group-task-mini-card');
     const rowLists = card.querySelectorAll('.group-task-row-list');
 
-    miniCards.forEach(mc => {
-      mc.addEventListener('dragstart', (e) => {
-        e.stopPropagation(); // 阻止冒泡到卡片组的拖拽
-        mc.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/group-task-id', mc.dataset.taskId);
-        e.dataTransfer.setData('text/group-task-group-id', group.id);
-      });
+    // 使用事件委托在 card 上统一处理 dragstart/dragend
+    card.addEventListener('dragstart', (e) => {
+      const miniCard = e.target.closest('.group-task-mini-card');
+      if (!miniCard) return;
+      // 如果正在拖拽的是整个 group-card，跳过
+      if (e.target === card) return;
 
-      mc.addEventListener('dragend', (e) => {
-        e.stopPropagation();
-        mc.classList.remove('dragging');
-        // 清理所有拖拽指示器
-        card.querySelectorAll('.group-task-drop-indicator').forEach(el => el.remove());
-        card.querySelectorAll('.group-task-row-list').forEach(r => r.classList.remove('drag-over'));
-      });
+      e.stopPropagation();
+      miniCard.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/group-task-id', miniCard.dataset.taskId);
+      e.dataTransfer.setData('text/group-task-group-id', group.id);
+    });
+
+    card.addEventListener('dragend', (e) => {
+      const miniCard = e.target.closest('.group-task-mini-card');
+      if (miniCard) miniCard.classList.remove('dragging');
+      card.querySelectorAll('.group-task-drop-indicator').forEach(el => el.remove());
+      card.querySelectorAll('.group-task-row-list').forEach(r => r.classList.remove('drag-over'));
     });
 
     rowLists.forEach(row => {
       row.addEventListener('dragover', (e) => {
         const taskId = e.dataTransfer.types.includes('text/group-task-id');
-        if (!taskId) return; // 不是组内任务拖拽
+        if (!taskId) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-
         row.classList.add('drag-over');
 
         // 移除旧的指示器
@@ -384,7 +501,7 @@
 
       row.addEventListener('drop', (e) => {
         e.preventDefault();
-        e.stopPropagation(); // 阻止冒泡到列的 drop handler
+        e.stopPropagation();
 
         row.classList.remove('drag-over');
         row.querySelectorAll('.group-task-drop-indicator').forEach(el => el.remove());
@@ -631,12 +748,42 @@
   UIManager.prototype.bindEvents = function() {
     _originalBindEvents.call(this);
 
+    this._groupContextMenuTargetId = null;
+
     // 卡片组按钮 - 打开模态框
     document.querySelectorAll('.btn-add-group').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const status = e.currentTarget.dataset.status;
         this.openGroupModal(status);
       });
+    });
+
+    // 卡片组右键菜单 - 点击其他地方关闭
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('groupContextMenu');
+      if (menu && !menu.contains(e.target)) {
+        this.hideGroupContextMenu();
+      }
+    });
+
+    // 卡片组右键菜单 - 菜单项点击
+    const groupMenu = document.getElementById('groupContextMenu');
+    if (groupMenu) {
+      groupMenu.addEventListener('click', (e) => {
+        const menuItem = e.target.closest('.menu-item');
+        if (!menuItem) return;
+        this.handleGroupContextAction(menuItem.dataset.action, this._groupContextMenuTargetId);
+        this.hideGroupContextMenu();
+      });
+    }
+
+    // 阻止看板列上的右键菜单冒泡
+    this.$board.addEventListener('contextmenu', (e) => {
+      // 如果右键点击的是 group-card-header，已在 createGroupElement 中处理
+      const groupHeader = e.target.closest('.group-card-header');
+      if (groupHeader) {
+        e.preventDefault();
+      }
     });
 
     // 卡片组拖拽（跳过组内任务的拖拽）
