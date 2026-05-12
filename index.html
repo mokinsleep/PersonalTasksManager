@@ -3714,6 +3714,218 @@ body.theme-dark .toast { background: #e0e0f0; color: #1a1a2e; }
 
 /* ============================
 
+ * 统一数据存储规范
+
+ * ============================ */
+
+const DATA_STRUCTURE = {
+
+  tasks: [],
+
+  groups: [],
+
+  dailyTodos: {},
+
+  theme: 'light',
+
+  sidebarCollapsed: false,
+
+  backupDir: ''
+
+};
+
+const DATA_STORAGE_KEY = 'task-board-data';
+
+function loadData() {
+
+  let data = {};
+
+  let migrated = [];
+
+  try {
+
+    const raw = localStorage.getItem(DATA_STORAGE_KEY);
+
+    if (raw) {
+
+      const parsed = JSON.parse(raw);
+
+      if (Array.isArray(parsed)) {
+
+        data = { tasks: parsed };
+
+        migrated.push('tasks (旧数组格式 → 对象格式)');
+
+      } else if (parsed && typeof parsed === 'object') {
+
+        data = parsed;
+
+      }
+
+    }
+
+  } catch (e) {
+
+    console.warn('⚠️ 读取主数据失败，将使用默认值', e);
+
+  }
+
+  // 迁移旧的分散 key
+
+  try {
+
+    const oldDaily = localStorage.getItem('daily-todo-data');
+
+    if (oldDaily && !data.dailyTodos) {
+
+      const parsed = JSON.parse(oldDaily);
+
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+
+        data.dailyTodos = parsed;
+
+        migrated.push('dailyTodos (从 daily-todo-data 迁移)');
+
+      }
+
+    }
+
+  } catch (e) {}
+
+  try {
+
+    const oldTheme = localStorage.getItem('left-sidebar-theme');
+
+    if (oldTheme && typeof oldTheme === 'string' && !data.theme) {
+
+      data.theme = oldTheme;
+
+      migrated.push('theme (从 left-sidebar-theme 迁移)');
+
+    }
+
+  } catch (e) {}
+
+  try {
+
+    const oldSidebar = localStorage.getItem('left-sidebar-state');
+
+    if (oldSidebar) {
+
+      const s = JSON.parse(oldSidebar);
+
+      if (s && typeof s.expanded === 'boolean' && data.sidebarCollapsed === undefined) {
+
+        data.sidebarCollapsed = !s.expanded;
+
+        migrated.push('sidebarCollapsed (从 left-sidebar-state 迁移)');
+
+      }
+
+    }
+
+  } catch (e) {}
+
+  if (migrated.length > 0) {
+
+    console.log('📦 数据迁移完成:', migrated.join(' | '));
+
+  }
+
+  // 合并默认值 + 类型校验
+
+  const result = {};
+
+  for (const [key, defaultVal] of Object.entries(DATA_STRUCTURE)) {
+
+    let val = data[key];
+
+    if (Array.isArray(defaultVal)) {
+
+      result[key] = Array.isArray(val) ? val : [];
+
+    } else if (typeof defaultVal === 'object' && defaultVal !== null) {
+
+      result[key] = (val && typeof val === 'object' && !Array.isArray(val)) ? val : {};
+
+    } else if (typeof defaultVal === 'boolean') {
+
+      result[key] = typeof val === 'boolean' ? val : defaultVal;
+
+    } else if (typeof defaultVal === 'string') {
+
+      result[key] = typeof val === 'string' ? val : defaultVal;
+
+    } else {
+
+      result[key] = val !== undefined ? val : defaultVal;
+
+    }
+
+  }
+
+  return result;
+
+}
+
+function saveData(data) {
+
+  const filtered = {};
+
+  for (const [key, defaultVal] of Object.entries(DATA_STRUCTURE)) {
+
+    if (!(key in data)) continue;
+
+    let val = data[key];
+
+    if (Array.isArray(defaultVal)) {
+
+      filtered[key] = Array.isArray(val) ? val : [];
+
+    } else if (typeof defaultVal === 'object' && defaultVal !== null) {
+
+      filtered[key] = (val && typeof val === 'object' && !Array.isArray(val)) ? val : {};
+
+    } else if (typeof defaultVal === 'boolean') {
+
+      filtered[key] = typeof val === 'boolean' ? val : defaultVal;
+
+    } else if (typeof defaultVal === 'string') {
+
+      filtered[key] = typeof val === 'string' ? val : defaultVal;
+
+    } else {
+
+      filtered[key] = val;
+
+    }
+
+  }
+
+  try {
+
+    localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(filtered));
+
+  } catch (e) {
+
+    console.error('❌ 数据保存失败', e);
+
+  }
+
+}
+
+function updateDataField(key, value) {
+
+  const data = loadData();
+
+  data[key] = value;
+
+  saveData(data);
+
+}
+
+/* ============================
+
  * DataStorage — 数据存储抽象层
 
  * 支持：File System Access API（优先）+ localStorage（回退/备份）
@@ -3920,9 +4132,9 @@ class DataStorage {
 
     try {
 
-      const raw = localStorage.getItem(this._localKey);
+      const data = loadData();
 
-      return raw ? JSON.parse(raw) : [];
+      return Array.isArray(data.tasks) ? data.tasks : [];
 
     } catch (e) {
 
@@ -3938,7 +4150,7 @@ class DataStorage {
 
     try {
 
-      localStorage.setItem(this._localKey, JSON.stringify(data));
+      updateDataField('tasks', Array.isArray(data) ? data : []);
 
     } catch (e) {
 
@@ -3982,15 +4194,23 @@ class TaskManager {
 
         console.warn('文件加载失败，回退到 localStorage', e);
 
-        this.tasks = this._ds.loadFromLocal();
+        const data = loadData();
+
+        this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
 
       }
 
     } else {
 
-      this.tasks = this._ds.loadFromLocal();
+      const data = loadData();
 
-      console.log(`💾 已从 localStorage 加载 ${this.tasks.length} 个任务`);
+      this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+      // 同步 groups 字段
+
+      this.groups = Array.isArray(data.groups) ? data.groups : [];
+
+      console.log(`💾 已从统一存储加载 ${this.tasks.length} 个任务`);
 
     }
 
@@ -5478,7 +5698,7 @@ class DailyTodoStorage {
 
   constructor() {
 
-    this._key = 'daily-todo-data';
+    // 使用统一数据存储，不再需要独立 key
 
   }
 
@@ -5486,9 +5706,9 @@ class DailyTodoStorage {
 
     try {
 
-      const raw = localStorage.getItem(this._key);
+      const data = loadData();
 
-      return raw ? JSON.parse(raw) : {};
+      return (data.dailyTodos && typeof data.dailyTodos === 'object' && !Array.isArray(data.dailyTodos)) ? data.dailyTodos : {};
 
     } catch (e) {
 
@@ -5504,7 +5724,7 @@ class DailyTodoStorage {
 
     try {
 
-      localStorage.setItem(this._key, JSON.stringify(data));
+      updateDataField('dailyTodos', (data && typeof data === 'object' && !Array.isArray(data)) ? data : {});
 
     } catch (e) {
 
@@ -6320,13 +6540,17 @@ class LeftSidebarManager {
 
     try {
 
-      const raw = localStorage.getItem(this._key);
+      const data = loadData();
+
+      if (data.sidebarCollapsed === false) this._expand();
+
+      // activeTool 仍使用独立 key（不在 DATA_STRUCTURE 中）
+
+      const raw = localStorage.getItem('left-sidebar-state');
 
       if (raw) {
 
         const state = JSON.parse(raw);
-
-        if (state.expanded) this._expand();
 
         if (state.tool) this._switchPanel(state.tool);
 
@@ -6340,7 +6564,11 @@ class LeftSidebarManager {
 
     try {
 
-      localStorage.setItem(this._key, JSON.stringify({ expanded: this._expanded, tool: this._activeTool }));
+      updateDataField('sidebarCollapsed', !this._expanded);
+
+      // activeTool 仍使用独立 key
+
+      localStorage.setItem('left-sidebar-state', JSON.stringify({ tool: this._activeTool }));
 
     } catch(e) {}
 
@@ -7098,8 +7326,6 @@ class ThemeModule {
 
   constructor() {
 
-    this._key = 'left-sidebar-theme';
-
     this._options = document.querySelectorAll('.theme-option');
 
     this._bindEvents();
@@ -7132,7 +7358,7 @@ class ThemeModule {
 
     if (theme !== 'default') document.body.classList.add('theme-' + theme);
 
-    try { localStorage.setItem(this._key, theme); } catch(e) {}
+    try { updateDataField('theme', theme); } catch(e) {}
 
   }
 
@@ -7140,13 +7366,19 @@ class ThemeModule {
 
     try {
 
-      const saved = localStorage.getItem(this._key);
+      const data = loadData();
 
-      if (saved) {
+      const saved = (typeof data.theme === 'string') ? data.theme : 'light';
+
+      if (saved && saved !== 'light') {
 
         this._options.forEach(o => o.classList.toggle('active', o.dataset.theme === saved));
 
         this._apply(saved);
+
+      } else {
+
+        this._options.forEach(o => o.classList.toggle('active', o.dataset.theme === 'default'));
 
       }
 
@@ -7217,4 +7449,3 @@ class ThemeModule {
 </body>
 
 </html>
-
