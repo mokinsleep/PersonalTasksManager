@@ -423,6 +423,58 @@ class TaskManager {
     const done = this.tasks.filter(t => t.status === 'done').length;
     return { total, done, undone: total - done };
   }
+
+  // --- Groups CRUD ---
+  getGroups() {
+    const data = loadData();
+    return Array.isArray(data.groups) ? data.groups : [];
+  }
+
+  getGroupsByStatus(status) {
+    return this.getGroups().filter(g => g.status === status);
+  }
+
+  addGroup(status, title) {
+    const groups = this.getGroups();
+    const group = {
+      id: 'group_' + Date.now() + '_' + Math.random(),
+      title: title || '新卡片组',
+      status: status,
+      collapsed: false,
+      createdAt: new Date().toISOString(),
+      completedAt: null,
+      tasks: []
+    };
+    groups.push(group);
+    updateDataField('groups', groups);
+    return group;
+  }
+
+  updateGroup(id, updates) {
+    const groups = this.getGroups();
+    const idx = groups.findIndex(g => g.id === id);
+    if (idx === -1) return null;
+    groups[idx] = { ...groups[idx], ...updates };
+    updateDataField('groups', groups);
+    return groups[idx];
+  }
+
+  deleteGroup(id) {
+    const groups = this.getGroups();
+    const newGroups = groups.filter(g => g.id !== id);
+    if (newGroups.length === groups.length) return false;
+    updateDataField('groups', newGroups);
+    return true;
+  }
+
+  toggleGroupCollapse(id) {
+    const groups = this.getGroups();
+    const group = groups.find(g => g.id === id);
+    if (!group) return null;
+    group.collapsed = !group.collapsed;
+    updateDataField('groups', groups);
+    return group;
+  }
 }
 
 /* ============================
@@ -524,9 +576,17 @@ class UIManager {
       column.addEventListener('drop', (e) => {
         e.preventDefault();
         column.classList.remove('drag-over');
-        const taskId = e.dataTransfer.getData('text/plain');
         const newStatus = column.dataset.status;
-        if (taskId && newStatus) this.moveTask(taskId, newStatus);
+        const groupId = e.dataTransfer.getData('text/group-id');
+        const taskId = e.dataTransfer.getData('text/plain');
+        if (groupId && newStatus) {
+          this.tm.updateGroup(groupId, { status: newStatus });
+          this.refreshBoard();
+          const statusLabels = { 'todo': '待处理', 'in-progress': '进行中', 'done': '已完成' };
+          this.showToast(`卡片组已移至「${statusLabels[newStatus]}」`);
+        } else if (taskId && newStatus) {
+          this.moveTask(taskId, newStatus);
+        }
       });
     });
     this.$board.addEventListener('contextmenu', (e) => {
@@ -573,6 +633,29 @@ class UIManager {
       el.addEventListener('change', () => this.refreshBoard());
     });
     this.$btnDataDir.addEventListener('click', () => this.handleDataDir());
+
+    // 卡片组按钮 - 打开模态框
+    document.querySelectorAll('.btn-add-group').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const status = e.currentTarget.dataset.status;
+        this.openGroupModal(status);
+      });
+    });
+
+    // 卡片组拖拽
+    this.$board.addEventListener('dragstart', (e) => {
+      const groupCard = e.target.closest('.group-card');
+      if (groupCard) {
+        groupCard.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/group-id', groupCard.dataset.groupId);
+      }
+    });
+    this.$board.addEventListener('dragend', (e) => {
+      const groupCard = e.target.closest('.group-card');
+      if (groupCard) groupCard.classList.remove('dragging');
+      document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+    });
   }
   refreshAll() {
     this.refreshBoard();
@@ -596,6 +679,9 @@ class UIManager {
       const col = this.columnMap[status];
       if (!col) return;
       col.list.innerHTML = '';
+      // 渲染卡片组
+      const groups = this.tm.getGroupsByStatus(status);
+      groups.forEach(group => col.list.appendChild(this.createGroupElement(group)));
       col.count.textContent = tasks.length;
       tasks.forEach(task => col.list.appendChild(this.createCardElement(task)));
     });
@@ -618,6 +704,112 @@ class UIManager {
       this.$filterTag.appendChild(opt);
     });
     if (tags.includes(currentValue)) this.$filterTag.value = currentValue;
+  }
+  createGroupElement(group) {
+    const card = document.createElement('div');
+    card.className = 'group-card' + (group.collapsed ? ' collapsed' : '');
+    card.dataset.groupId = group.id;
+    card.draggable = true;
+    const taskCount = (group.tasks && Array.isArray(group.tasks)) ? group.tasks.length : 0;
+    card.innerHTML = `
+      <div class="group-card-header">
+        <span class="group-card-collapse-icon">▼</span>
+        <span class="group-card-icon">📁</span>
+        <span class="group-card-title">${this.escapeHtml(group.title)}</span>
+        <span class="group-card-count">· ${taskCount}项任务</span>
+        <button class="group-card-delete" title="删除卡片组">🗑️</button>
+      </div>
+      <div class="group-card-body">
+        <div class="group-card-empty">暂无组内任务（第二期开发）</div>
+      </div>
+    `;
+    // 300ms 延迟判断单击折叠 vs 双击编辑
+    let clickTimer = null;
+    card.querySelector('.group-card-header').addEventListener('click', (e) => {
+      if (e.target.closest('.group-card-delete')) return;
+      if (clickTimer) {
+        // 双击：进入编辑标题
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        this._startGroupTitleEdit(group, card.querySelector('.group-card-title'));
+      } else {
+        // 单击：延迟 300ms 后折叠
+        clickTimer = setTimeout(() => {
+          clickTimer = null;
+          this.tm.toggleGroupCollapse(group.id);
+          this.refreshBoard();
+        }, 300);
+      }
+    });
+    card.querySelector('.group-card-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm('确定要删除卡片组「' + group.title + '」吗？')) {
+        this.tm.deleteGroup(group.id);
+        this.refreshBoard();
+        this.showToast('已删除卡片组');
+      }
+    });
+    return card;
+  }
+  _startGroupTitleEdit(group, titleEl) {
+    if (!titleEl) return;
+    const originalTitle = group.title;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'group-card-title-input';
+    input.value = originalTitle;
+    titleEl.replaceWith(input);
+    input.focus();
+    input.select();
+    const saveEdit = () => {
+      const newTitle = input.value.trim();
+      if (newTitle && newTitle !== originalTitle) {
+        this.tm.updateGroup(group.id, { title: newTitle });
+        this.showToast('✅ 卡片组标题已更新');
+      }
+      this.refreshBoard();
+    };
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+      else if (ev.key === 'Escape') { input.value = originalTitle; input.blur(); }
+    });
+  }
+  openGroupModal(status) {
+    const modalHtml = `
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+          <h2>📁 新建卡片组</h2>
+          <div class="form-group">
+            <label>标题 *</label>
+            <input type="text" id="groupModalTitle" placeholder="输入卡片组标题" autofocus>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" id="groupModalCancel">取消</button>
+            <button class="btn-primary" id="groupModalSave">创建卡片组</button>
+          </div>
+        </div>
+      </div>
+    `;
+    this.$modalContainer.innerHTML = modalHtml;
+    const $overlay = document.getElementById('modalOverlay');
+    const $input = document.getElementById('groupModalTitle');
+    const closeModal = () => { this.$modalContainer.innerHTML = ''; };
+    $overlay.addEventListener('click', (e) => { if (e.target === $overlay) closeModal(); });
+    document.getElementById('groupModalCancel').addEventListener('click', closeModal);
+    document.getElementById('groupModalSave').addEventListener('click', () => {
+      const title = $input.value.trim();
+      if (!title) { this.showToast('⚠️ 请输入卡片组标题'); $input.focus(); return; }
+      this.tm.addGroup(status, title);
+      closeModal();
+      this.refreshBoard();
+      this.showToast('✅ 已创建卡片组');
+    });
+    const escHandler = (e) => {
+      if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
+    setTimeout(() => $input.focus(), 100);
   }
   createCardElement(task) {
     const card = document.createElement('div');

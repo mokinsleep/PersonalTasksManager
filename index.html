@@ -201,21 +201,30 @@
   <div class="column col-progress" data-status="in-progress" id="colInProgress">
     <div class="column-header">
       <span class="col-title">🔄 进行中 <span class="col-count" id="countInProgress">0</span></span>
-      <button class="btn-add-task" data-status="in-progress" title="新增进行中任务">+</button>
+      <span style="display:flex;gap:4px;">
+        <button class="btn-add-task" data-status="in-progress" title="新增进行中任务">+</button>
+        <button class="btn-add-group" data-status="in-progress" title="新增卡片组" style="width:28px;height:28px;font-size:14px;padding:0;border-radius:7px;flex-shrink:0;">📁</button>
+      </span>
     </div>
     <div class="card-list" id="listInProgress"></div>
   </div>
   <div class="column col-todo" data-status="todo" id="colTodo">
     <div class="column-header">
       <span class="col-title">📌 待处理 <span class="col-count" id="countTodo">0</span></span>
-      <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
+      <span style="display:flex;gap:4px;">
+        <button class="btn-add-task" data-status="todo" title="新增待处理任务">+</button>
+        <button class="btn-add-group" data-status="todo" title="新增卡片组" style="width:28px;height:28px;font-size:14px;padding:0;border-radius:7px;flex-shrink:0;">📁</button>
+      </span>
     </div>
     <div class="card-list" id="listTodo"></div>
   </div>
   <div class="column col-done" data-status="done" id="colDone">
     <div class="column-header">
       <span class="col-title">✅ 已完成 <span class="col-count" id="countDone">0</span></span>
-      <button class="btn-add-task" data-status="done" title="新增已完成任务">+</button>
+      <span style="display:flex;gap:4px;">
+        <button class="btn-add-task" data-status="done" title="新增已完成任务">+</button>
+        <button class="btn-add-group" data-status="done" title="新增卡片组" style="width:28px;height:28px;font-size:14px;padding:0;border-radius:7px;flex-shrink:0;">📁</button>
+      </span>
     </div>
     <div class="card-list" id="listDone"></div>
   </div>
