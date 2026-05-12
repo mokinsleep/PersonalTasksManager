@@ -4159,6 +4159,7 @@
         }
 
         async init() {
+        let raw;
           try {
             const cfgRaw = localStorage.getItem(this._configKey);
 
@@ -4340,13 +4341,13 @@
 
           if (this._ds.mode === "fileSystem" && this._ds.fsAvailable) {
             try {
-              this.tasks = await this._ds.loadFromFile();
+              raw = await this._ds.loadFromFile();
 
               console.log(`📁 已从文件加载 ${this.tasks.length} 个任务`);
             } catch (e) {
               console.warn("文件加载失败，回退到 localStorage", e);
 
-              this.tasks = this._ds.loadFromLocal();
+              raw = this._ds.loadFromLocal();
             }
           } else {
             this.tasks = this._ds.loadFromLocal();
