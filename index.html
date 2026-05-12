@@ -4303,7 +4303,7 @@
           try {
             const raw = localStorage.getItem(this._localKey);
 
-            return raw ? JSON.parse(raw) : [];
+            if (!raw) return { tasks: [], groups: [] }; const data = JSON.parse(raw); if (Array.isArray(data)) return { tasks: data, groups: [] }; return { tasks: data.tasks || [], groups: data.groups || [] };
           } catch (e) {
             console.warn("localStorage 读取失败", e);
 
@@ -4331,6 +4331,8 @@
           this._ds = dataStorage;
 
           this.tasks = [];
+    this.groups = [];
+
         }
 
         async init() {
@@ -4374,21 +4376,40 @@
             progress: Array.isArray(t.progress) ? t.progress : [],
           }));
 
-          await this._persist();
+          
+    if (Array.isArray(raw)) { raw = { tasks: raw, groups: [] }; }
+    this.groups = (raw.groups || []).map(g => ({
+      id: g.id || ('group_' + crypto.randomUUID()),
+      title: g.title || '未命名组',
+      status: g.status || 'todo',
+      collapsed: !!g.collapsed,
+      createdAt: g.createdAt || Date.now(),
+      tasks: (g.tasks || []).map(t => ({
+        id: t.id || crypto.randomUUID(),
+        title: t.title || '',
+        description: t.description || '',
+        dueDate: t.dueDate || '',
+        priority: t.priority || 'medium',
+        tags: Array.isArray(t.tags) ? t.tags : [],
+        createdAt: t.createdAt || Date.now()
+      }))
+    }));
+    console.log(`   - ${this.tasks.length} 个任务, ${this.groups.length} 个卡片组`);
+    await this._persist();
         }
 
         async _persist() {
           if (this._ds.mode === "fileSystem" && this._ds.fsAvailable) {
             try {
-              await this._ds.saveToFile(this.tasks);
+              await this._ds.saveToFile({ tasks: this.tasks, groups: this.groups });
             } catch (e) {
               console.warn("文件写入失败，使用 localStorage 备份", e);
 
-              this._ds.saveToLocal(this.tasks);
+              this._ds.saveToLocal({ tasks: this.tasks, groups: this.groups });
             }
           }
 
-          this._ds.saveToLocal(this.tasks);
+          this._ds.saveToLocal({ tasks: this.tasks, groups: this.groups });
         }
 
         async setFileDirectory() {
@@ -4752,6 +4773,19 @@
 
               this.openModal(null, status);
             });
+
+    // 新增卡片组按钮
+    document.querySelectorAll('.btn-add-group').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const status = e.currentTarget.dataset.status;
+        if (this.groupManager) {
+          this.groupManager.add('新卡片组', status).then(() => {
+            this.refreshAll();
+            this.showToast('已创建卡片组');
+          });
+        }
+      });
+    });
           });
 
           // 单击触发编辑（替代原来的 dblclick），同时防止拖拽误触
@@ -4843,11 +4877,19 @@
 
               column.classList.remove("drag-over");
 
-              const taskId = e.dataTransfer.getData("text/plain");
-
+              const dragId = e.dataTransfer.getData("text/plain");
               const newStatus = column.dataset.status;
-
-              if (taskId && newStatus) this.moveTask(taskId, newStatus);
+              if (!dragId || !newStatus) return;
+              if (this._draggingType === 'group' && this.groupManager) {
+                this.groupManager.moveToStatus(dragId, newStatus).then(() => {
+                  this.refreshAll();
+                  this.showToast('卡片组已移至其他列');
+                });
+              } else if (this._draggingType === 'group-task') {
+                this.refreshAll();
+              } else {
+                this.moveTask(dragId, newStatus);
+              }
             });
           });
 
@@ -4866,6 +4908,21 @@
           document.addEventListener("click", (e) => {
             if (!this.$contextMenu.contains(e.target)) this.hideContextMenu();
           });
+
+    // 卡片组右键菜单事件
+    const $groupContextMenu = document.getElementById('groupContextMenu');
+    if ($groupContextMenu) {
+      $groupContextMenu.addEventListener('click', (e) => {
+        const menuItem = e.target.closest('.menu-item');
+        if (!menuItem) return;
+        this.handleGroupContextAction(menuItem.dataset.action, this._contextMenuGroupId);
+        this.hideGroupContextMenu();
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const groupMenu = document.getElementById('groupContextMenu');
+      if (groupMenu && !groupMenu.contains(e.target)) this.hideGroupContextMenu();
+    });
 
           this.$contextMenu.addEventListener("click", (e) => {
             const menuItem = e.target.closest(".menu-item");
@@ -4963,14 +5020,21 @@
             else grouped["todo"].push(t);
           });
 
-          Object.entries(grouped).forEach(([status, tasks]) => {
+              const groupedGroups = { 'todo': [], 'in-progress': [], 'done': [] };
+    if (this.tm.groups) {
+      this.tm.groups.forEach(g => {
+        if (groupedGroups[g.status]) groupedGroups[g.status].push(g);
+        else groupedGroups['todo'].push(g);
+      });
+    }
+    Object.entries(grouped).forEach(([status, tasks]) => {
             const col = this.columnMap[status];
 
             if (!col) return;
 
             col.list.innerHTML = "";
 
-            col.count.textContent = tasks.length;
+            col.count.textContent = tasks.length + (groupedGroups[status] || []).length;
 
             tasks.forEach((task) =>
               col.list.appendChild(this.createCardElement(task)),
@@ -4982,12 +5046,10 @@
 
         refreshStats() {
           const stats = this.tm.getStats();
-
-          this.$statTotal.textContent = stats.total;
-
-          this.$statDone.textContent = stats.done;
-
-          this.$statUndone.textContent = stats.undone;
+    const groupTaskCount = this.groupManager ? this.groupManager.getTotalTaskCount() : 0;
+    this.$statTotal.textContent = stats.total + groupTaskCount;
+    this.$statDone.textContent = stats.done;
+    this.$statUndone.textContent = stats.undone + groupTaskCount;
         }
 
         refreshTagFilter() {
@@ -5094,6 +5156,219 @@
 
           return card;
         }
+
+    createGroupElement(group) {
+        const el = document.createElement('div');
+        el.className = 'task-group' + (group.collapsed ? ' collapsed' : '');
+        el.dataset.groupId = group.id;
+        el.dataset.status = group.status;
+        el.draggable = true;
+        const taskCount = group.tasks ? group.tasks.length : 0;
+        let bodyContent = '';
+        if (taskCount === 0) {
+          bodyContent = '<div class="task-group-empty">暂无任务，点击下方按钮添加</div>';
+        } else {
+          bodyContent = '<div class="group-mini-card-list">';
+          group.tasks.forEach(task => {
+            const priorityLabels = { high: '🔴', medium: '🟡', low: '🟢' };
+            let dueDateHtml = '';
+            if (task.dueDate) {
+              const dueDate = new Date(task.dueDate + 'T00:00:00');
+              const today = new Date(); today.setHours(0,0,0,0);
+              const isOverdue = dueDate < today;
+              dueDateHtml = `<span class="due-date ${isOverdue ? 'overdue' : ''}">📅 ${task.dueDate}</span>`;
+            }
+            let tagsHtml = '';
+            if (task.tags && task.tags.length > 0) {
+              tagsHtml = task.tags.map(t => `<span class="category-tag">${this.escapeHtml(t)}</span>`).join('');
+            }
+            let descHtml = '';
+            if (task.description) descHtml = `<div class="card-desc">${this.escapeHtml(task.description)}</div>`;
+            bodyContent += `<div class="group-task-card" data-task-id="${task.id}" data-group-id="${group.id}" draggable="true"><input type="checkbox" class="card-checkbox" data-task-id="${task.id}" data-group-id="${group.id}"><div class="card-title">${this.escapeHtml(task.title)}</div>${descHtml}<div class="card-meta"><span class="priority-tag ${task.priority}">${priorityLabels[task.priority] || '🟡'}</span>${tagsHtml}${dueDateHtml}</div></div>`;
+          });
+          bodyContent += '</div>';
+        }
+        el.innerHTML = `<div class="task-group-header"><span class="group-icon">📁</span><span class="group-title">${this.escapeHtml(group.title)}</span><span class="group-count">${taskCount} 项任务</span><span class="group-toggle">▼</span></div><div class="task-group-body">${bodyContent}<button class="group-add-task-btn" data-group-id="${group.id}">＋ 新增任务</button></div>`;
+        el.querySelector('.task-group-header').addEventListener('click', (e) => {
+          if (e.target.closest('.group-title-edit-input')) return;
+          if (this.groupManager) this.groupManager.toggleCollapse(group.id);
+          el.classList.toggle('collapsed');
+        });
+        el.querySelectorAll('.group-task-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('card-checkbox')) return;
+            this.openGroupTaskModal(group.id, card.dataset.taskId);
+          });
+        });
+        el.querySelectorAll('.group-task-card').forEach(card => {
+          card.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.contextMenuTargetId = card.dataset.taskId;
+            this._contextMenuGroupId = group.id;
+            this.showContextMenu(e.clientX, e.clientY);
+          });
+        });
+        const addBtn = el.querySelector('.group-add-task-btn');
+        if (addBtn) {
+          addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openGroupTaskModal(group.id, null);
+          });
+        }
+        el.addEventListener('contextmenu', (e) => {
+          if (e.target.closest('.group-task-card')) return;
+          e.preventDefault();
+          this._contextMenuGroupId = group.id;
+          this.showGroupContextMenu(e.clientX, e.clientY);
+        });
+        el.addEventListener('dragstart', (e) => {
+          this.draggingTaskId = group.id;
+          this._draggingType = 'group';
+          el.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', group.id);
+        });
+        el.addEventListener('dragend', (e) => {
+          el.classList.remove('dragging');
+          this.draggingTaskId = null;
+          this._draggingType = null;
+          document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+        });
+        el.querySelectorAll('.group-task-card').forEach(card => {
+          card.addEventListener('dragstart', (e) => {
+            e.stopPropagation();
+            this.draggingTaskId = card.dataset.taskId;
+            this._draggingType = 'group-task';
+            this._draggingFromGroupId = group.id;
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', card.dataset.taskId);
+          });
+          card.addEventListener('dragend', (e) => {
+            card.classList.remove('dragging');
+            this.draggingTaskId = null;
+            this._draggingType = null;
+            this._draggingFromGroupId = null;
+          });
+        });
+        return el;
+      }
+    
+      openGroupTaskModal(groupId, taskIdOrNull) {
+        const gm = this.groupManager;
+        if (!gm) return;
+        const isEdit = taskIdOrNull !== null;
+        const task = isEdit ? gm.getTaskById(groupId, taskIdOrNull) : null;
+        const initialTags = isEdit ? (task.tags || []) : [];
+        const modalHtml = `<div class="modal-overlay" id="modalOverlay"><div class="modal" id="modal"><h2>${isEdit ? '编辑组内任务' : '新增组内任务'}</h2><div class="form-group"><label>标题 *</label><input type="text" id="inputTitle" value="${isEdit ? this.escapeHtml(task.title) : ''}" placeholder="输入任务标题" autofocus></div><div class="form-group"><label>描述</label><textarea id="inputDesc" placeholder="添加详细描述">${isEdit ? this.escapeHtml(task.description) : ''}</textarea></div><div class="form-group"><label>截止日期</label><input type="date" id="inputDueDate" value="${isEdit ? task.dueDate : ''}"></div><div class="form-group"><label>优先级</label><select id="inputPriority"><option value="high" ${(isEdit && task.priority === 'high') ? 'selected' : ''}>🔴 高</option><option value="medium" ${(!isEdit || task.priority === 'medium') ? 'selected' : ''}>🟡 中</option><option value="low" ${(isEdit && task.priority === 'low') ? 'selected' : ''}>🟢 低</option></select></div><div class="form-group"><label>标签</label><div class="tag-input-wrapper" id="tagWrapper">${initialTags.map(tag => `<span class="tag-chip"><span>${this.escapeHtml(tag)}</span><span class="tag-remove" data-tag="${this.escapeHtml(tag)}">&times;</span></span>`).join('')}<input type="text" class="tag-input" id="inputTag" placeholder="输入标签后回车"></div></div><div class="form-actions"><button class="btn-secondary" id="btnModalCancel">取消</button>${isEdit ? '<button class="btn-secondary" id="btnModalDelete" style="color:#dc2626;border-color:#fca5a5;">删除</button>' : ''}<button class="btn-primary" id="btnModalSave">${isEdit ? '保存修改' : '创建任务'}</button></div></div></div>`;
+        this.$modalContainer.innerHTML = modalHtml;
+        const $overlay = document.getElementById('modalOverlay');
+        const $inputTitle = document.getElementById('inputTitle');
+        const $inputDesc = document.getElementById('inputDesc');
+        const $inputDueDate = document.getElementById('inputDueDate');
+        const $inputPriority = document.getElementById('inputPriority');
+        const $inputTag = document.getElementById('inputTag');
+        const $tagWrapper = document.getElementById('tagWrapper');
+        let currentTags = [...initialTags];
+        const renderTags = () => {
+          $tagWrapper.querySelectorAll('.tag-chip').forEach(c => c.remove());
+          currentTags.forEach(tag => {
+            const chip = document.createElement('span');
+            chip.className = 'tag-chip';
+            chip.innerHTML = `<span>${this.escapeHtml(tag)}</span><span class="tag-remove" data-tag="${this.escapeHtml(tag)}">&times;</span>`;
+            chip.querySelector('.tag-remove').addEventListener('click', () => { currentTags = currentTags.filter(t => t !== tag); renderTags(); });
+            $tagWrapper.insertBefore(chip, $inputTag);
+          });
+        };
+        $inputTag.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); const v = $inputTag.value.trim(); if (v && !currentTags.includes(v)) { currentTags.push(v); $inputTag.value = ''; renderTags(); } }
+          else if (e.key === 'Backspace' && $inputTag.value === '' && currentTags.length > 0) { currentTags.pop(); renderTags(); }
+        });
+        const closeModal = () => { this.$modalContainer.innerHTML = ''; };
+        $overlay.addEventListener('click', (e) => { if (e.target === $overlay) closeModal(); });
+        document.getElementById('btnModalCancel').addEventListener('click', closeModal);
+        const delBtn = document.getElementById('btnModalDelete');
+        if (delBtn) delBtn.addEventListener('click', () => {
+          if (confirm('确定要删除这个任务吗？')) { gm.deleteTask(groupId, taskIdOrNull); closeModal(); this.refreshAll(); this.showToast('已删除组内任务'); }
+        });
+        document.getElementById('btnModalSave').addEventListener('click', () => {
+          const title = $inputTitle.value.trim();
+          if (!title) { this.showToast('⚠️ 请输入任务标题'); $inputTitle.focus(); return; }
+          const td = { title, description: $inputDesc.value.trim(), dueDate: $inputDueDate.value, priority: $inputPriority.value, tags: currentTags };
+          if (isEdit) { gm.updateTask(groupId, taskIdOrNull, td); this.showToast('✅ 任务已更新'); }
+          else { gm.addTask(groupId, td); this.showToast('✅ 任务已创建'); }
+          closeModal(); this.refreshAll();
+        });
+        const escH = (e) => { if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escH); } };
+        document.addEventListener('keydown', escH);
+        setTimeout(() => $inputTitle.focus(), 100);
+      }
+    
+      showGroupContextMenu(x, y) {
+        const menu = document.getElementById('groupContextMenu');
+        if (!menu) return;
+        menu.classList.add('show');
+        let left = x, top = y;
+        if (left + 160 > window.innerWidth) left = window.innerWidth - 170;
+        if (top + 250 > window.innerHeight) top = window.innerHeight - 260;
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+      }
+    
+      hideGroupContextMenu() {
+        const menu = document.getElementById('groupContextMenu');
+        if (menu) menu.classList.remove('show');
+        this._contextMenuGroupId = null;
+      }
+    
+      handleGroupContextAction(action, groupId) {
+        if (!groupId || !this.groupManager) return;
+        const gm = this.groupManager;
+        const group = gm.getById(groupId);
+        if (!group) return;
+        switch (action) {
+          case 'group-edit-title': this._startGroupTitleEdit(groupId); break;
+          case 'group-copy': gm.copy(groupId).then(() => { this.refreshAll(); this.showToast('已复制卡片组'); }); break;
+          case 'group-move-todo': gm.moveToStatus(groupId, 'todo').then(() => { this.refreshAll(); this.showToast('已移至待处理'); }); break;
+          case 'group-move-progress': gm.moveToStatus(groupId, 'in-progress').then(() => { this.refreshAll(); this.showToast('已移至进行中'); }); break;
+          case 'group-move-done': gm.moveToStatus(groupId, 'done').then(() => { this.refreshAll(); this.showToast('已移至已完成'); }); break;
+          case 'group-delete':
+            if (confirm('删除卡片组将同时删除组内所有任务，此操作不可撤销。\n\n确定要删除吗？')) {
+              gm.delete(groupId).then(() => { this.refreshAll(); this.showToast('已删除卡片组'); });
+            }
+            break;
+        }
+      }
+    
+      _startGroupTitleEdit(groupId) {
+        const gm = this.groupManager;
+        if (!gm) return;
+        const group = gm.getById(groupId);
+        if (!group) return;
+        const el = document.querySelector(`[data-group-id="${groupId}"]`);
+        if (!el) return;
+        const titleEl = el.querySelector('.group-title');
+        if (!titleEl) return;
+        const $input = document.createElement('input');
+        $input.type = 'text';
+        $input.className = 'group-title-edit-input';
+        $input.value = group.title;
+        titleEl.replaceWith($input);
+        $input.focus(); $input.select();
+        const saveEdit = () => {
+          const newTitle = $input.value.trim();
+          if (newTitle && newTitle !== group.title) gm.update(groupId, { title: newTitle }).then(() => this.refreshAll());
+          else this.refreshAll();
+        };
+        $input.addEventListener('blur', saveEdit);
+        $input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); $input.blur(); }
+          else if (e.key === 'Escape') { $input.value = group.title; $input.blur(); }
+        });
+      }
+    
+
 
         escapeHtml(str) {
           const div = document.createElement("div");
@@ -7231,6 +7506,104 @@
       }
 
       /* ============================
+ * GroupManager — 卡片组管理
+ * ============================ */
+class GroupManager {
+  constructor(taskManager, uiManager) {
+    this.tm = taskManager;
+    this.ui = uiManager;
+  }
+  getAll() { return this.tm.groups; }
+  getById(id) { return this.tm.groups.find(g => g.id === id) || null; }
+  getByStatus(status) { return this.tm.groups.filter(g => g.status === status); }
+  async add(title, status) {
+    const group = { id: 'group_' + crypto.randomUUID(), title: title || '未命名组', status: status || 'todo', collapsed: false, createdAt: Date.now(), tasks: [] };
+    this.tm.groups.push(group);
+    await this.tm._persist();
+    return group;
+  }
+  async update(id, updates) {
+    const g = this.getById(id);
+    if (!g) return null;
+    Object.assign(g, updates);
+    await this.tm._persist();
+    return g;
+  }
+  async delete(id) {
+    const idx = this.tm.groups.findIndex(g => g.id === id);
+    if (idx === -1) return false;
+    this.tm.groups.splice(idx, 1);
+    await this.tm._persist();
+    return true;
+  }
+  async toggleCollapse(id) {
+    const g = this.getById(id);
+    if (!g) return;
+    g.collapsed = !g.collapsed;
+    await this.tm._persist();
+  }
+  async moveToStatus(id, newStatus) {
+    const g = this.getById(id);
+    if (!g || g.status === newStatus) return;
+    g.status = newStatus;
+    await this.tm._persist();
+  }
+  async copy(id) {
+    const original = this.getById(id);
+    if (!original) return null;
+    const copy = { id: 'group_' + crypto.randomUUID(), title: original.title + ' (副本)', status: original.status, collapsed: false, createdAt: Date.now(), tasks: original.tasks.map(t => ({ ...t, id: crypto.randomUUID(), createdAt: Date.now() })) };
+    this.tm.groups.push(copy);
+    await this.tm._persist();
+    return copy;
+  }
+  async addTask(groupId, taskData) {
+    const g = this.getById(groupId);
+    if (!g || g.tasks.length >= 30) return null;
+    const task = { id: crypto.randomUUID(), title: taskData.title || '未命名任务', description: taskData.description || '', dueDate: taskData.dueDate || '', priority: taskData.priority || 'medium', tags: Array.isArray(taskData.tags) ? [...taskData.tags] : [], createdAt: Date.now() };
+    g.tasks.push(task);
+    await this.tm._persist();
+    return task;
+  }
+  async updateTask(groupId, taskId, updates) {
+    const g = this.getById(groupId);
+    if (!g) return false;
+    const t = g.tasks.find(t => t.id === taskId);
+    if (!t) return false;
+    Object.assign(t, updates);
+    await this.tm._persist();
+    return true;
+  }
+  async deleteTask(groupId, taskId) {
+    const g = this.getById(groupId);
+    if (!g) return false;
+    const idx = g.tasks.findIndex(t => t.id === taskId);
+    if (idx === -1) return false;
+    g.tasks.splice(idx, 1);
+    await this.tm._persist();
+    return true;
+  }
+  async deleteManyTasks(groupId, taskIds) {
+    const g = this.getById(groupId);
+    if (!g) return;
+    const idSet = new Set(taskIds);
+    g.tasks = g.tasks.filter(t => !idSet.has(t.id));
+    await this.tm._persist();
+  }
+  getTaskById(groupId, taskId) {
+    const g = this.getById(groupId);
+    if (!g) return null;
+    return g.tasks.find(t => t.id === taskId) || null;
+  }
+  getTaskCount(groupId) {
+    const g = this.getById(groupId);
+    return g ? g.tasks.length : 0;
+  }
+  getTotalTaskCount() {
+    return this.tm.groups.reduce((sum, g) => sum + g.tasks.length, 0);
+  }
+}
+
+/* ============================
 
  * ThemeModule — 主题换色模块
 
