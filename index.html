@@ -14,9 +14,6 @@
 <aside class="left-sidebar" id="leftSidebar">
   <div class="sidebar-icons">
     <button class="sidebar-icon-btn active" data-tool="timer" title="计时器">⏱️<span class="tooltip">计时器</span></button>
-    <button class="sidebar-icon-btn" data-tool="countdown" title="倒数日">📅<span class="tooltip">倒数日</span></button>
-    <button class="sidebar-icon-btn" data-tool="calc" title="计算器">🧮<span class="tooltip">计算器</span></button>
-    <button class="sidebar-icon-btn" data-tool="theme" title="主题">🎨<span class="tooltip">主题</span></button>
   </div>
   <div class="sidebar-panel-area" id="sidebarPanelArea">
     <!-- 计时器面板 -->
@@ -38,113 +35,6 @@
         <button class="timer-ctrl-btn start" id="timerStart">开始</button>
         <button class="timer-ctrl-btn pause" id="timerPause" style="display:none;">暂停</button>
         <button class="timer-ctrl-btn reset" id="timerReset">重置</button>
-      </div>
-    </div>
-    <!-- 倒数日面板 -->
-    <div class="sidebar-panel" id="panel-countdown" style="display:none;">
-      <div class="sidebar-panel-title">📅 倒数日</div>
-      <div class="countdown-add-bar">
-        <input type="text" id="cdName" placeholder="名称">
-        <input type="date" id="cdDate">
-        <button class="btn-countdown-add" id="cdAddBtn">添加</button>
-      </div>
-      <div class="countdown-section-label">手动添加</div>
-      <div class="countdown-list" id="cdManualList"></div>
-      <div class="countdown-section-label">任务截止日期</div>
-      <div class="countdown-list" id="cdTaskList"></div>
-    </div>
-    <!-- 计算器面板 -->
-    <div class="sidebar-panel" id="panel-calc" style="display:none;">
-      <div class="sidebar-panel-title">🧮 计算器</div>
-      <div class="calc-tabs">
-        <button class="calc-tab active" data-calc="basic">基础</button>
-        <button class="calc-tab" data-calc="fx">汇率</button>
-        <button class="calc-tab" data-calc="unit">单位</button>
-      </div>
-      <!-- 基础计算器 -->
-      <div class="calc-panel active" id="calcBasic">
-        <div class="calc-display">
-          <div class="calc-expr" id="calcExpr"></div>
-          <div class="calc-result" id="calcResult">0</div>
-        </div>
-        <div class="calc-grid">
-          <button class="calc-btn op" data-val="C">C</button>
-          <button class="calc-btn op" data-val="±">±</button>
-          <button class="calc-btn op" data-val="%">%</button>
-          <button class="calc-btn op" data-val="÷">÷</button>
-          <button class="calc-btn" data-val="7">7</button>
-          <button class="calc-btn" data-val="8">8</button>
-          <button class="calc-btn" data-val="9">9</button>
-          <button class="calc-btn op" data-val="×">×</button>
-          <button class="calc-btn" data-val="4">4</button>
-          <button class="calc-btn" data-val="5">5</button>
-          <button class="calc-btn" data-val="6">6</button>
-          <button class="calc-btn op" data-val="-">-</button>
-          <button class="calc-btn" data-val="1">1</button>
-          <button class="calc-btn" data-val="2">2</button>
-          <button class="calc-btn" data-val="3">3</button>
-          <button class="calc-btn op" data-val="+">+</button>
-          <button class="calc-btn" data-val="0" style="grid-column:span 2;">0</button>
-          <button class="calc-btn" data-val=".">.</button>
-          <button class="calc-btn eq" data-val="=">=</button>
-        </div>
-      </div>
-      <!-- 汇率换算 -->
-      <div class="calc-panel" id="calcFx">
-        <div class="fx-row">
-          <select id="fxFrom"><option value="CNY">CNY</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="JPY">JPY</option><option value="GBP">GBP</option></select>
-          <input type="number" id="fxAmount" placeholder="金额" value="100">
-        </div>
-        <button class="fx-swap-btn" id="fxSwap">⇅</button>
-        <div class="fx-row">
-          <select id="fxTo"><option value="CNY">CNY</option><option value="USD" selected>USD</option><option value="EUR">EUR</option><option value="JPY">JPY</option><option value="GBP">GBP</option></select>
-        </div>
-        <div class="fx-result" id="fxResult">—</div>
-      </div>
-      <!-- 单位换算 -->
-      <div class="calc-panel" id="calcUnit">
-        <div class="unit-row">
-          <select id="unitCat">
-            <option value="length">长度</option>
-            <option value="weight">重量</option>
-            <option value="area">面积</option>
-            <option value="volume">体积</option>
-          </select>
-        </div>
-        <div class="unit-row">
-          <select id="unitFrom"></select>
-          <input type="number" id="unitAmount" placeholder="数值" value="1">
-        </div>
-        <div class="unit-row">
-          <select id="unitTo"></select>
-        </div>
-        <div class="unit-result" id="unitResult">—</div>
-      </div>
-    </div>
-    <!-- 主题面板 -->
-    <div class="sidebar-panel" id="panel-theme" style="display:none;">
-      <div class="sidebar-panel-title">🎨 主题</div>
-      <div class="theme-list" id="themeList">
-        <div class="theme-option active" data-theme="default">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#fff9e6,#fdf6e3);"></div>
-          <span class="theme-name">浅黄（默认）</span>
-          <span class="theme-check">✓</span>
-        </div>
-        <div class="theme-option" data-theme="light-blue">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#eef5ff,#e8f0fe);"></div>
-          <span class="theme-name">浅蓝</span>
-          <span class="theme-check">✓</span>
-        </div>
-        <div class="theme-option" data-theme="light-gray">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#f5f5f5,#f0f0f0);"></div>
-          <span class="theme-name">浅灰</span>
-          <span class="theme-check">✓</span>
-        </div>
-        <div class="theme-option" data-theme="dark">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);"></div>
-          <span class="theme-name">暗黑</span>
-          <span class="theme-check">✓</span>
-        </div>
       </div>
     </div>
   </div>
@@ -275,7 +165,7 @@
   <button class="menu-item" data-action="copy">📋 复制任务</button>
   <div class="menu-divider"></div>
   <button class="menu-item" data-action="move-todo">📌 移至待处理</button>
-  <button class="menu-item" data-action="move-progress">🔄 移至进行中</button>
+  <button class="menu-item" data-action="move-progress">� 移至进行中</button>
   <button class="menu-item" data-action="move-done">✅ 移至已完成</button>
   <div class="menu-divider"></div>
   <button class="menu-item danger" data-action="delete">🗑 删除</button>

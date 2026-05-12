@@ -8,7 +8,6 @@ const DATA_STRUCTURE = window.DATA_STRUCTURE || {
   tasks: [],
   groups: [],
   dailyTodos: {},
-  theme: 'light',
   sidebarCollapsed: false,
   backupDir: ''
 };
@@ -42,13 +41,6 @@ function loadData() {
         data.dailyTodos = parsed;
         migrated.push('dailyTodos (从 daily-todo-data 迁移)');
       }
-    }
-  } catch (e) {}
-  try {
-    const oldTheme = localStorage.getItem('left-sidebar-theme');
-    if (oldTheme && typeof oldTheme === 'string' && !data.theme) {
-      data.theme = oldTheme;
-      migrated.push('theme (从 left-sidebar-theme 迁移)');
     }
   } catch (e) {}
   try {
@@ -1430,10 +1422,7 @@ class LeftSidebarManager {
     this._sidebar = document.getElementById('leftSidebar');
     this._icons = this._sidebar.querySelectorAll('.sidebar-icon-btn');
     this._panels = {
-      timer: document.getElementById('panel-timer'),
-      countdown: document.getElementById('panel-countdown'),
-      calc: document.getElementById('panel-calc'),
-      theme: document.getElementById('panel-theme')
+      timer: document.getElementById('panel-timer')
     };
     this._activeTool = 'timer';
     this._expanded = false;
@@ -1602,256 +1591,6 @@ class TimerModule {
   }
 }
 
-/* ============================
- * CountdownDaysModule — 倒数日模块
- * ============================ */
-
-class CountdownDaysModule {
-  constructor(taskManager) {
-    this._tm = taskManager;
-    this._key = 'left-sidebar-countdown';
-    this._items = this._load();
-    this._cacheDom();
-    this._bindEvents();
-    this.render();
-  }
-  _cacheDom() {
-    this.$name = document.getElementById('cdName');
-    this.$date = document.getElementById('cdDate');
-    this.$addBtn = document.getElementById('cdAddBtn');
-    this.$manualList = document.getElementById('cdManualList');
-    this.$taskList = document.getElementById('cdTaskList');
-  }
-  _bindEvents() {
-    this.$addBtn.addEventListener('click', () => this._add());
-    this.$name.addEventListener('keydown', e => { if (e.key === 'Enter') this._add(); });
-  }
-  _load() {
-    try { return JSON.parse(localStorage.getItem(this._key)) || []; } catch(e) { return []; }
-  }
-  _save() {
-    try { localStorage.setItem(this._key, JSON.stringify(this._items)); } catch(e) {}
-  }
-  _add() {
-    const name = this.$name.value.trim();
-    const date = this.$date.value;
-    if (!name || !date) return;
-    this._items.push({ id: crypto.randomUUID(), name, date });
-    this._save();
-    this.$name.value = '';
-    this.$date.value = '';
-    this.render();
-  }
-  _remove(id) {
-    this._items = this._items.filter(i => i.id !== id);
-    this._save();
-    this.render();
-  }
-  _calcDays(dateStr) {
-    const target = new Date(dateStr + 'T00:00:00');
-    const today = new Date(); today.setHours(0,0,0,0);
-    return Math.ceil((target - today) / 86400000);
-  }
-  render() {
-    this.$manualList.innerHTML = '';
-    if (this._items.length === 0) {
-      this.$manualList.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:12px;">暂无手动添加的倒数日</div>';
-    } else {
-      this._items.forEach(item => {
-        const days = this._calcDays(item.date);
-        const isPast = days < 0;
-        const absDays = Math.abs(days);
-        const label = isPast ? `${absDays}天前` : days === 0 ? '今天' : `还有${days}天`;
-        this.$manualList.innerHTML += `<div class="countdown-item"><span class="cd-name">${this._esc(item.name)}</span><span class="cd-days ${isPast ? 'past' : ''}">${label}</span><span class="cd-date">${item.date}</span><button class="cd-delete" data-id="${item.id}">×</button></div>`;
-      });
-      this.$manualList.querySelectorAll('.cd-delete').forEach(btn => {
-        btn.addEventListener('click', () => this._remove(btn.dataset.id));
-      });
-    }
-    this.$taskList.innerHTML = '';
-    const tasks = this._tm.getAll().filter(t => t.dueDate && t.status !== 'done');
-    if (tasks.length === 0) {
-      this.$taskList.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:12px;">暂无带截止日期的未完成任务</div>';
-    } else {
-      tasks.sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).forEach(t => {
-        const days = this._calcDays(t.dueDate);
-        const isPast = days < 0;
-        const absDays = Math.abs(days);
-        const label = isPast ? `${absDays}天前` : days === 0 ? '今天' : `还有${days}天`;
-        this.$taskList.innerHTML += `<div class="countdown-item"><span class="cd-name">${this._esc(t.title)}</span><span class="cd-days ${isPast ? 'past' : ''}">${label}</span><span class="cd-date">${t.dueDate}</span></div>`;
-      });
-    }
-  }
-  _esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-}
-
-/* ============================
- * CalculatorModule — 多功能计算器模块
- * ============================ */
-
-class CalculatorModule {
-  constructor() {
-    this._cacheDom();
-    this._bindCalcTabs();
-    this._bindBasicCalc();
-    this._bindFx();
-    this._bindUnit();
-  }
-  _cacheDom() {
-    this._calcTabs = document.querySelectorAll('.calc-tab');
-    this._calcPanels = { basic: document.getElementById('calcBasic'), fx: document.getElementById('calcFx'), unit: document.getElementById('calcUnit') };
-    this.$calcExpr = document.getElementById('calcExpr');
-    this.$calcResult = document.getElementById('calcResult');
-    this.$fxFrom = document.getElementById('fxFrom');
-    this.$fxTo = document.getElementById('fxTo');
-    this.$fxAmount = document.getElementById('fxAmount');
-    this.$fxResult = document.getElementById('fxResult');
-    this.$fxSwap = document.getElementById('fxSwap');
-    this.$unitCat = document.getElementById('unitCat');
-    this.$unitFrom = document.getElementById('unitFrom');
-    this.$unitTo = document.getElementById('unitTo');
-    this.$unitAmount = document.getElementById('unitAmount');
-    this.$unitResult = document.getElementById('unitResult');
-  }
-  _bindCalcTabs() {
-    this._calcTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        this._calcTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        Object.values(this._calcPanels).forEach(p => p.classList.remove('active'));
-        this._calcPanels[tab.dataset.calc].classList.add('active');
-      });
-    });
-  }
-  _bindBasicCalc() {
-    this._calcCurrent = '0';
-    this._calcPrev = '';
-    this._calcOp = '';
-    this._calcNew = true;
-    document.querySelectorAll('#calcBasic .calc-btn').forEach(btn => {
-      btn.addEventListener('click', () => this._calcPress(btn.dataset.val));
-    });
-  }
-  _calcPress(val) {
-    if (val === 'C') { this._calcCurrent = '0'; this._calcPrev = ''; this._calcOp = ''; this._calcNew = true; }
-    else if (val === '±') { this._calcCurrent = String(-parseFloat(this._calcCurrent)); }
-    else if (val === '%') { this._calcCurrent = String(parseFloat(this._calcCurrent) / 100); }
-    else if (['+','-','×','÷'].includes(val)) {
-      if (this._calcPrev && this._calcOp && !this._calcNew) this._calcEval();
-      this._calcPrev = this._calcCurrent;
-      this._calcOp = val;
-      this._calcNew = true;
-    }
-    else if (val === '=') { this._calcEval(); this._calcOp = ''; this._calcPrev = ''; }
-    else if (val === '.') { if (!this._calcCurrent.includes('.')) this._calcCurrent += '.'; this._calcNew = false; }
-    else {
-      if (this._calcNew) { this._calcCurrent = val; this._calcNew = false; }
-      else this._calcCurrent += val;
-    }
-    this.$calcExpr.textContent = this._calcPrev ? `${this._calcPrev} ${this._calcOp}` : '';
-    this.$calcResult.textContent = this._calcCurrent;
-  }
-  _calcEval() {
-    if (!this._calcPrev || !this._calcOp) return;
-    const a = parseFloat(this._calcPrev), b = parseFloat(this._calcCurrent);
-    let r = 0;
-    if (this._calcOp === '+') r = a + b;
-    else if (this._calcOp === '-') r = a - b;
-    else if (this._calcOp === '×') r = a * b;
-    else if (this._calcOp === '÷') r = b !== 0 ? a / b : 'Error';
-    this._calcCurrent = typeof r === 'number' ? String(Math.round(r * 1e10) / 1e10) : r;
-    this._calcNew = true;
-  }
-  _bindFx() {
-    this._fxRates = { USD: 1, CNY: 7.25, EUR: 0.92, JPY: 155.5, GBP: 0.79 };
-    const calc = () => {
-      const amt = parseFloat(this.$fxAmount.value);
-      if (isNaN(amt)) { this.$fxResult.textContent = '—'; return; }
-      const from = this.$fxFrom.value, to = this.$fxTo.value;
-      const usd = amt / this._fxRates[from];
-      const result = usd * this._fxRates[to];
-      this.$fxResult.textContent = `${amt} ${from} ≈ ${result.toFixed(2)} ${to}`;
-    };
-    this.$fxAmount.addEventListener('input', calc);
-    this.$fxFrom.addEventListener('change', calc);
-    this.$fxTo.addEventListener('change', calc);
-    this.$fxSwap.addEventListener('click', () => {
-      const tmp = this.$fxFrom.value;
-      this.$fxFrom.value = this.$fxTo.value;
-      this.$fxTo.value = tmp;
-      calc();
-    });
-    calc();
-  }
-  _bindUnit() {
-    this._units = {
-      length: { label: '长度', units: { '寸': 0.0333, '英寸': 0.0254, '厘米': 0.01, '米': 1 } },
-      weight: { label: '重量', units: { '克': 0.001, '千克': 1, '磅': 0.4536, '盎司': 0.02835 } },
-      area: { label: '面积', units: { '平方厘米': 0.0001, '平方米': 1, '亩': 666.67, '公顷': 10000 } },
-      volume: { label: '体积', units: { '毫升': 0.001, '升': 1, '加仑': 3.7854, '立方厘米': 0.001 } }
-    };
-    const fillUnits = () => {
-      const cat = this.$unitCat.value;
-      const units = Object.keys(this._units[cat].units);
-      this.$unitFrom.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
-      this.$unitTo.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
-      if (units.length > 1) this.$unitTo.selectedIndex = 1;
-      calcUnit();
-    };
-    const calcUnit = () => {
-      const amt = parseFloat(this.$unitAmount.value);
-      if (isNaN(amt)) { this.$unitResult.textContent = '—'; return; }
-      const cat = this._units[this.$unitCat.value];
-      const fromFactor = cat.units[this.$unitFrom.value];
-      const toFactor = cat.units[this.$unitTo.value];
-      const result = amt * fromFactor / toFactor;
-      this.$unitResult.textContent = `${amt} ${this.$unitFrom.value} = ${Math.round(result * 1e8) / 1e8} ${this.$unitTo.value}`;
-    };
-    this.$unitCat.addEventListener('change', fillUnits);
-    this.$unitFrom.addEventListener('change', calcUnit);
-    this.$unitTo.addEventListener('change', calcUnit);
-    this.$unitAmount.addEventListener('input', calcUnit);
-    fillUnits();
-  }
-}
-
-/* ============================
- * ThemeModule — 主题换色模块
- * ============================ */
-
-class ThemeModule {
-  constructor() {
-    this._options = document.querySelectorAll('.theme-option');
-    this._bindEvents();
-    this._restore();
-  }
-  _bindEvents() {
-    this._options.forEach(opt => {
-      opt.addEventListener('click', () => {
-        this._options.forEach(o => o.classList.remove('active'));
-        opt.classList.add('active');
-        this._apply(opt.dataset.theme);
-      });
-    });
-  }
-  _apply(theme) {
-    document.body.classList.remove('theme-light-blue', 'theme-light-gray', 'theme-dark');
-    if (theme !== 'default') document.body.classList.add('theme-' + theme);
-    try { updateDataField('theme', theme); } catch(e) {}
-  }
-  _restore() {
-    try {
-      const data = loadData();
-      const saved = (typeof data.theme === 'string') ? data.theme : 'light';
-      if (saved && saved !== 'light') {
-        this._options.forEach(o => o.classList.toggle('active', o.dataset.theme === saved));
-        this._apply(saved);
-      } else {
-        this._options.forEach(o => o.classList.toggle('active', o.dataset.theme === 'default'));
-      }
-    } catch(e) {}
-  }
-}
 
 /* ============================
  * 应用初始化（异步）
@@ -1868,10 +1607,7 @@ document.addEventListener('DOMContentLoaded', async function init() {
     const dailyUI = new DailyTodoUI(dailyManager);
     const leftSidebar = new LeftSidebarManager();
     const timer = new TimerModule();
-    const countdownDays = new CountdownDaysModule(taskManager);
-    const calculator = new CalculatorModule();
-    const theme = new ThemeModule();
-    window.__app = { ds, taskManager, uiManager, dailyStorage, dailyManager, dailyUI, leftSidebar, timer, countdownDays, calculator, theme };
+    window.__app = { ds, taskManager, uiManager, dailyStorage, dailyManager, dailyUI, leftSidebar, timer };
     console.log('✅ 任务管理工具已就绪');
     console.log(`   - 共加载 ${taskManager.tasks.length} 个任务`);
     console.log(`   - 存储模式: ${ds.mode === 'fileSystem' ? '📁 文件系统 (' + ds.dirName + '/tasks.json)' : '💾 localStorage'}`);
