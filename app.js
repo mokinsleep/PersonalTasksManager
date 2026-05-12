@@ -499,6 +499,7 @@ class UIManager {
       const card = e.target.closest('.task-card');
       if (!card) return;
       if (e.target.classList.contains('card-checkbox')) return;
+      if (e.target.closest('.card-delete-btn')) return;
       if (this._mouseMoved) return;
       this.openModal(card.dataset.taskId);
     });
@@ -657,6 +658,7 @@ class UIManager {
     }
     card.innerHTML = `
       <input type="checkbox" class="card-checkbox" data-task-id="${task.id}">
+      <button class="card-delete-btn" title="删除任务">×</button>
       <div class="card-title">${this.escapeHtml(task.title)}</div>
       ${descHtml}
       ${progressPreviewHtml}
@@ -666,6 +668,17 @@ class UIManager {
         ${dueDateHtml}
       </div>
     `;
+    // Delete button event
+    card.querySelector('.card-delete-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm('确定要删除任务「' + task.title + '」吗？')) {
+        this.tm.delete(task.id);
+        this.selectedCardIds.delete(task.id);
+        this.updateBatchBar();
+        this.refreshAll();
+        this.showToast('已删除任务');
+      }
+    });
     return card;
   }
   escapeHtml(str) {

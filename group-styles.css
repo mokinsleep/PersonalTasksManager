@@ -102,10 +102,10 @@
 .group-card-delete:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
 .group-card-body {
-  padding: 0 14px 12px 42px;
+  padding: 0 14px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .group-card.collapsed .group-card-body { display: none; }
@@ -131,91 +131,189 @@
   box-shadow: 0 0 0 2px rgba(124, 140, 224, 0.15);
 }
 
-/* ==================== 组内任务列表 ==================== */
+/* ==================== 组内三列看板（纵向堆叠）==================== */
 
-.group-task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.group-task-row {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
 }
 
-.group-task-item {
+.group-task-row-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 7px;
-  font-size: 13px;
-  transition: all var(--transition-fast);
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
-.group-task-item:hover {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.group-task-item .group-task-title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.group-task-row-label {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-primary);
-  font-weight: 500;
-}
-
-.group-task-item .group-task-actions {
-  display: flex;
-  gap: 2px;
   flex-shrink: 0;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
 }
 
-.group-task-item:hover .group-task-actions { opacity: 1; }
+.group-task-row-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
 
-.group-task-item .group-task-btn {
+.group-task-row .btn-add-group-task {
   width: 22px;
   height: 22px;
-  border-radius: 4px;
-  border: none;
+  padding: 0;
+  margin-left: auto;
+  border: 1px solid rgba(124, 140, 224, 0.3);
+  border-radius: 5px;
   background: transparent;
-  color: #9ca3af;
-  cursor: pointer;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.group-task-item .group-task-btn:hover { background: #f3f4f6; color: var(--text-primary); }
-.group-task-item .group-task-btn.delete:hover { background: #fef2f2; color: #dc2626; }
-
-.btn-add-group-task {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  padding: 6px 10px;
-  background: transparent;
-  border: 1px dashed rgba(124, 140, 224, 0.3);
-  border-radius: 6px;
-  font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
+  font-size: 14px;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   transition: all var(--transition-fast);
 }
 
-.btn-add-group-task:hover {
-  background: rgba(124, 140, 224, 0.08);
+.group-task-row .btn-add-group-task:hover {
+  background: rgba(124, 140, 224, 0.1);
   border-color: rgba(124, 140, 224, 0.5);
   color: #4f6ef7;
 }
+
+.group-task-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 24px;
+  transition: background var(--transition-fast);
+}
+
+.group-task-row-list.drag-over {
+  background: rgba(124, 140, 224, 0.06);
+  border-radius: 6px;
+}
+
+.group-task-row-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 0;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ==================== 组内任务小卡片（纵向堆叠条目）==================== */
+
+.group-task-mini-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.group-task-mini-card:hover {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.12);
+  background: #fafbff;
+}
+
+.group-task-mini-card.completed .group-task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.group-task-mini-card.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.group-task-mini-card .group-task-priority {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.group-task-mini-card .group-task-title {
+  flex: 1;
+  min-width: 0;
+  max-width: 180px; /* ≈10个中文字符宽度 */
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-overflow: clip;
+  mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+}
+
+.group-task-mini-card .group-task-due-date {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.group-task-mini-card .group-task-due-date.overdue {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.group-task-mini-card .group-task-btn.delete {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #d1d5db;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0;
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.group-task-mini-card:hover .group-task-btn.delete { opacity: 1; }
+.group-task-mini-card .group-task-btn.delete:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ==================== 拖拽放置指示器 ==================== */
+
+.group-task-drop-indicator {
+  height: 3px;
+  background: #4f6ef7;
+  border-radius: 2px;
+  margin: 2px 0;
+  pointer-events: none;
+  animation: dropIndicatorPulse 0.6s ease infinite alternate;
+}
+
+@keyframes dropIndicatorPulse {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+/* ==================== 暗黑主题 ==================== */
 
 body.theme-dark .group-card {
   background: rgba(30, 30, 50, 0.9);
@@ -238,21 +336,60 @@ body.theme-dark .btn-add-group {
   color: #9ca3bf;
 }
 
-body.theme-dark .group-task-item {
-  background: #2d2d4a;
-  border-color: #3d3d5c;
+body.theme-dark .group-task-row {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-body.theme-dark .group-task-item .group-task-title {
+body.theme-dark .group-task-row-label {
   color: #e0e0f0;
 }
 
-body.theme-dark .btn-add-group-task {
+body.theme-dark .group-task-row .btn-add-group-task {
   border-color: rgba(124, 140, 224, 0.3);
   color: #6b7299;
 }
 
-body.theme-dark .btn-add-group-task:hover {
+body.theme-dark .group-task-row .btn-add-group-task:hover {
   background: rgba(124, 140, 224, 0.1);
   color: #4f6ef7;
+}
+
+body.theme-dark .group-task-mini-card {
+  background: #2d2d4a;
+  border-color: #3d3d5c;
+}
+
+body.theme-dark .group-task-mini-card:hover {
+  background: #35355a;
+  border-color: #4d4d7a;
+}
+
+body.theme-dark .group-task-mini-card .group-task-title {
+  color: #e0e0f0;
+}
+
+body.theme-dark .group-task-mini-card .group-task-due-date {
+  color: #6b7299;
+}
+
+body.theme-dark .group-task-mini-card .group-task-due-date.overdue {
+  color: #f87171;
+}
+
+body.theme-dark .group-task-mini-card .group-task-btn.delete {
+  color: #6b7299;
+}
+
+body.theme-dark .group-task-mini-card .group-task-btn.delete:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+}
+
+body.theme-dark .group-task-row-empty {
+  color: #6b7299;
+}
+
+body.theme-dark .group-task-drop-indicator {
+  background: #6b8aff;
 }

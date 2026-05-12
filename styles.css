@@ -641,6 +641,16 @@ body {
   padding-left: 0;
 
   transition: padding-left var(--transition-fast);
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: clip;
+
+  mask-image: linear-gradient(to right, #000 85%, transparent 100%);
+
+  -webkit-mask-image: linear-gradient(to right, #000 85%, transparent 100%);
 }
 
 .task-card .card-desc {
@@ -776,6 +786,60 @@ body {
   font-weight: 500;
 
   white-space: nowrap;
+}
+
+.task-card .card-delete-btn {
+  position: absolute;
+
+  top: 10px;
+
+  right: 10px;
+
+  width: 22px;
+
+  height: 22px;
+
+  border-radius: 5px;
+
+  border: 1px solid transparent;
+
+  background: transparent;
+
+  color: #d1d5db;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  opacity: 0;
+
+  transition: all var(--transition-fast);
+
+  z-index: 1;
+
+  line-height: 1;
+
+  font-family: inherit;
+}
+
+.task-card:hover .card-delete-btn {
+  opacity: 1;
+}
+
+.task-card .card-delete-btn:hover {
+  background: #fef2f2;
+
+  border-color: #fca5a5;
+
+  color: #dc2626;
 }
 
 /* ==================== 卡片组 ==================== */
@@ -3502,4 +3566,14 @@ body.theme-dark .daily-item-card {
 body.theme-dark .toast {
   background: #e0e0f0;
   color: #1a1a2e;
+}
+
+body.theme-dark .task-card .card-delete-btn {
+  color: #6b7299;
+}
+
+body.theme-dark .task-card .card-delete-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #f87171;
 }
